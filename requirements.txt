@@ -1,0 +1,4 @@
+Flask
+gevent
+sqlalchemy
+psycopg2-binary
