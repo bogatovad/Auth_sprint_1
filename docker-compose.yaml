@@ -7,9 +7,9 @@ services:
       volumes:
         - ./src:/auth
       expose:
-        - 8000
+        - 5000
       ports:
-        - 8000:8000
+        - 5000:5000
 
     redis:
       image: redis:7-alpine
