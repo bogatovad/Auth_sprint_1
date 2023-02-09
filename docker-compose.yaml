@@ -5,7 +5,7 @@ services:
       depends_on:
         - redis
       volumes:
-        - ./src:/flask
+        - ./src:/auth
       expose:
         - 8000
       ports:
