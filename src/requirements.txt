@@ -1,5 +1,6 @@
-Flask
-gevent
-sqlalchemy
-psycopg2-binary
 alembic==1.7.7
+Flask==2.2.2
+gevent==22.10.2
+psycopg2-binary==2.9.5
+SQLAlchemy==2.0.2
+flask-sqlalchemy==3.0.3
