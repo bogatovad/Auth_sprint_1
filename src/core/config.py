@@ -6,9 +6,9 @@ class AuthSettings(BaseSettings):
     pg_user: str = Field('auth', env='POSTGRES_USER')
     pg_password: str = Field('auth', env='POSTGRES_PASSWORD')
     db_host: str = Field('postgres_auth', env='POSTGRES_HOST')
-    db_port: int = Field(5433, env='DB_PORT')
+    db_port: int = Field(5432, env='DB_PORT')
     redis_host: str = Field('redis_auth', env='REDIS_HOST')
-    redis_port: int = Field(6363, env='REDIS_PORT')
+    redis_port: int = Field(6379, env='REDIS_PORT')
     auth_port: int = Field(5000, env='AUTH_PORT')
 
 auth_config = AuthSettings()
