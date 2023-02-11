@@ -154,3 +154,5 @@ static/
 
 .idea/
 /.idea/*
+
+/alembic

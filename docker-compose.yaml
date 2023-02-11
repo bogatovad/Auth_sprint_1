@@ -1,9 +1,10 @@
 version: '3'
 services:
-    auth:
+    auth_api:
       build: src
+      container_name: auth_api
       depends_on:
-        - redis
+        - redis_auth
       volumes:
         - ./src:/auth
       expose:
@@ -11,17 +12,22 @@ services:
       ports:
         - 5000:5000
 
-    redis:
+    redis_auth:
       image: redis:7-alpine
-
-    postgres:
-      image: postgres:13.0-alpine
       volumes:
-        - data_postgres:/var/lib/postgresql/data/
+      - data_redis_auth:/data
+
+    postgres_auth:
+      image: postgres:13.0-alpine
+      container_name: postgres_auth
+      restart: always
+      volumes:
+        - data_postgres_auth:/var/lib/postgresql/data/
       env_file:
         - envs/.env
       expose:
         - 5432
 
 volumes:
-  data_postgres:
+  data_postgres_auth:
+  data_redis_auth:

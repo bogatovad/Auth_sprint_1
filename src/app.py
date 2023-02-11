@@ -1,5 +1,5 @@
 from flask import Flask
-from api.v1.views.role import role
+from api.v1.views.role.role import role
 
 
 app = Flask(__name__)

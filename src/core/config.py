@@ -1,7 +1,5 @@
 import os
-from dotenv import load_dotenv
 
-load_dotenv
 
 class Config(object):
     DEBUG = False
@@ -10,7 +8,7 @@ class Config(object):
 
     SECRET_KEY = 'YOUR_RANDOM_SECRET_KEY'
 
-    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    #SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
