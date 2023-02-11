@@ -1,4 +1,5 @@
 from flask import Blueprint
+from flask_marshmallow import Marshmallow
 
 
 role = Blueprint('role', __name__, url_prefix='/role')
