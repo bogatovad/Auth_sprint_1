@@ -13,4 +13,4 @@ COPY .. .
 RUN chown auth:auth -R /auth
 
 USER auth
-CMD alembic init alembic && python3 main.py
+CMD python3 wsgi.py
