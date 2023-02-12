@@ -1,7 +1,9 @@
 from flask import Flask
+from flask_marshmallow import Marshmallow
 
-from db.postgres import init_db, db
+from db.postgres import init_db
 from api.v1.views.role import role
+from db.extensions import db, ma
 
 
 app = Flask(__name__)
@@ -14,6 +16,7 @@ def hello_world():
 
 app.config.from_pyfile('settings.py', silent=True)
 init_db(app)
+ma.init_app(app)
 app.app_context().push()
 db.create_all()
 
