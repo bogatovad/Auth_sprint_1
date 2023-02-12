@@ -14,7 +14,7 @@ app.register_blueprint(role)
 def hello_world():
     return 'Hello, World!'
 
-app.config.from_pyfile('settings.py', silent=True)
+app.config.from_pyfile('core/config', silent=True)
 init_db(app)
 ma.init_app(app)
 app.app_context().push()
