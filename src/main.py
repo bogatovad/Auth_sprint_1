@@ -1,7 +1,10 @@
-from flask import Flask
+from flask import Flask, request, jsonify
+from flask_marshmallow import Marshmallow
 from db.postgres import init_db
 from api.v1.views.role import role
 from db.extensions import db, ma, api
+
+from db_models import Role
 
 
 app = Flask(__name__)
@@ -12,10 +15,11 @@ app.register_blueprint(role)
 def hello_world():
     return 'Hello, World!'
 
+
 app.config.from_pyfile('./core/config', silent=True)
 init_db(app)
 ma.init_app(app)
-#api.init_app(app)
+api.init_app(app)
 app.app_context().push()
 db.create_all()
 
