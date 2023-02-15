@@ -3,9 +3,9 @@ from pydantic import BaseSettings, Field
 
 
 class AuthSettings(BaseSettings):
-    db_name: str = Field('auth', env='DB_NAME')
-    pg_user: str = Field('auth', env='POSTGRES_USER')
-    pg_password: str = Field('auth', env='POSTGRES_PASSWORD') #check envs
+    db_name: str = Field('postgres', env='DB_NAME')
+    pg_user: str = Field('seniacat', env='POSTGRES_USER')
+    pg_password: str = Field('Ksu090787', env='POSTGRES_PASSWORD') #check envs
     db_host: str = Field('postgres_auth', env='POSTGRES_HOST')
     db_port: int = Field(5432, env='DB_PORT')
     redis_host: str = Field('redis_auth', env='REDIS_HOST')
