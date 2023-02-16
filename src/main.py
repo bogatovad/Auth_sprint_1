@@ -1,14 +1,20 @@
 from flask import Flask
+from flask_restful import Api
+from api.v1.urls import urls
+from flask_jwt_extended import JWTManager
 
-from db.postgres import init_db, db
-from db.models import User
+from db.postgres import init_db
+
 
 app = Flask(__name__)
 
+api = Api(app)
 
-@app.route('/hello-world')
-def hello_world():
-    return 'Hello, World!'
+jwt = JWTManager(app)
+app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+
+for resource, url in urls:
+    api.add_resource(resource, url)
 
 
 def main():
