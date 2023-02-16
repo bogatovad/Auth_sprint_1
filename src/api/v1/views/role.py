@@ -18,12 +18,11 @@ def add_role():
     db.session.add(new_role)
     db.session.commit()
     role_schema = RoleSchema()
-    return role_schema.jsonify(new_role)
+    return make_response(role_schema.jsonify(new_role), HTTPStatus.OK)
     
 
-
 @role.get('/')
-def get_roles():
+def all_roles():
     all_roles = Role.query.all()
     role_schema = RoleSchema(many=True)
     output = role_schema.dump(all_roles)
@@ -31,8 +30,15 @@ def get_roles():
 
 
 @role.put('/')
-def put_role():
-    pass
+def update_role():
+    id = request.args['id']
+    db_role = Role.query.get(id)
+
+    role_name = request.args['name']
+    db_role.name = role_name
+    db.session.commit()
+    role_schema = RoleSchema()
+    return make_response(role_schema.jsonify(db_role), HTTPStatus.OK)
 
 
 @role.delete('/')
