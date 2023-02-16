@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_restful import Api
-from src.api.v1.urls import urls
+from api.v1.urls import urls
 from flask_jwt_extended import JWTManager
+
+from db.postgres import init_db
+
 
 app = Flask(__name__)
 
@@ -13,5 +16,11 @@ app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
 for resource, url in urls:
     api.add_resource(resource, url)
 
-if __name__ == "__main__":
-    app.run()
+
+def main():
+    init_db(app)
+    app.run(host='0.0.0.0', port=5555)
+
+
+if __name__ == '__main__':
+    main()

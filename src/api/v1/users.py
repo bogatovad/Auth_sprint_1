@@ -8,7 +8,8 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt,
 )
-from src import redis_client
+
+from db.redis import redis_client
 
 sign_up_parser = reqparse.RequestParser()
 sign_up_parser.add_argument(
@@ -41,6 +42,7 @@ sign_up_parser.add_argument("first_name", dest="first_name", location="form", re
 
 class SignUp(Resource):
     def post(self):
+        print('hello')
         args = sign_up_parser.parse_args()
         login = args["login"]
         # TODO remove mock. Проверка наличия пользака в БД.
