@@ -7,6 +7,7 @@ from flask_jwt_extended import (
     create_refresh_token,
     jwt_required,
     get_jwt,
+    get_jwt_identity,
 )
 from src import redis_client
 
@@ -79,12 +80,13 @@ class Login(Resource):
 
     def post(self):
         args = login_parser.parse_args()
+        user_id = get_jwt_identity()  # Получаем id пользователя из jwt
         # TODO remove mock. Проверка наличия пользака в БД.
         #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
         user = True
-        user_id = 'user_id' # TODO заменить на айди из базы
+        user_id = 'user_id'  # TODO заменить на айди из базы
         identity = "something"  # TODO Remove mock, use user.id or something else
-        access_token, refresh_token = create_refresh_token(identity), create_access_token(identity)
+        access_token, refresh_token = create_access_token(identity), create_refresh_token(identity)
 
         if not user:
             return {"message": "Invalid credentials"}, HTTPStatus.UNAUTHORIZED
@@ -99,8 +101,10 @@ class Login(Resource):
 class Logout(Resource):
     """Выход пользователя из аккаунта."""
 
-    @jwt_required(refresh=True)
+    @jwt_required()
     def post(self):
+        # записать невалидный аксес
+        current_user = get_jwt_identity()
         jwt = get_jwt()
         # TODO реализовать redis_client.put_invalid_token(jwt)
         return make_response(jsonify(message="Log outed"), HTTPStatus.OK)
@@ -113,7 +117,6 @@ class RefreshToken(Resource):
     def get(self):
         identity = "something"  # TODO Remove mock, use user.id or something else
         access_token, refresh_token = create_refresh_token(identity), create_access_token(identity)
-        old_jwt = get_jwt()
         # TODO реализовать redis_client.refresh_user_token(user_id, old_jwt, access_token)
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
