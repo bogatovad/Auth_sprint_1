@@ -44,6 +44,35 @@ sign_up_parser.add_argument("first_name", dest="first_name", location="form", re
 
 class SignUp(Resource):
     def post(self):
+        """
+        Sign up.
+        ---
+        parameters:
+          - in: body
+            name: body
+            required:
+              - login
+              - password
+            schema:
+              id: Credentials
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+        responses:
+          200:
+            description: User created
+            schema:
+              message:
+              example: User '{login}' successfully created
+          409:
+            description: User exists
+            schema:
+              message:
+                type: string
+                example: User '{login}' exists. Choose another login.
+        """
         args = sign_up_parser.parse_args()
         login = args["login"]
         # TODO remove mock. Проверка наличия пользака в БД.
@@ -81,6 +110,26 @@ class Login(Resource):
     """
 
     def post(self):
+        """
+        Login
+        ---
+        parameters:
+          - in: body
+            name: body
+            schema:
+              $ref: '#/definitions/Credentials'
+        responses:
+          200:
+            description:
+            schema:
+              $ref: '#/definitions/TokensPair'
+          403:
+            description: Unauthorized
+            schema:
+              message:
+                type: string
+                example: Unauthorized
+        """
         args = login_parser.parse_args()
         # TODO remove mock. Проверка наличия пользака в БД.
         #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
@@ -104,6 +153,20 @@ class Logout(Resource):
 
     @jwt_required()
     def post(self):
+        """
+        Logout.
+        ---
+        description: Send access_token in authorization.
+        responses:
+          200:
+            description: Success
+            schema:
+              properties:
+                message:
+                  type: string
+                  example: Log outed
+
+        """
         user_id = get_jwt_identity()
         jti = get_jwt()['jti']
         redis_client.set_user_invalid_access_token(user_id=user_id, jti=jti)
@@ -115,6 +178,23 @@ class RefreshToken(Resource):
 
     @jwt_required(refresh=True)
     def get(self):
+        """
+        Refreshing tokens.
+        ---
+        description: Send refresh_token in authorization.
+        responses:
+          200:
+            description: A new pair of access and refresh tokens
+            schema:
+              id: TokensPair
+              properties:
+                access_token:
+                  type: string
+                  description: Access_token
+                refresh_token:
+                  type: string
+                  description: Refresh_token
+        """
         identity = get_jwt_identity()  # TODO Remove mock, use user.id or something else
         refresh_token = create_refresh_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
         access_token = create_access_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)

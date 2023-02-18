@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restful import Api
 from api.v1.urls import urls
 from flask_jwt_extended import JWTManager
+from flasgger import Swagger, swag_from
 
 from db.postgres import init_db
 
@@ -12,6 +13,8 @@ api = Api(app)
 
 jwt = JWTManager(app)
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+
+swag = Swagger(app)
 
 for resource, url in urls:
     api.add_resource(resource, url)
