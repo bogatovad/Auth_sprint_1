@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 
 
 class StoragePassword(ABC):
+    """Интерфейс, предоставляющий методы для создания хэша и проверки пароля."""
+
     @abstractmethod
     def create_hash(self, password: str):
         pass
@@ -14,6 +16,8 @@ class StoragePassword(ABC):
 
 
 class PBKDF2StoragePassword(StoragePassword):
+    """Реализация интерфейса через алгоритм PBKDF2."""
+
     @staticmethod
     def _generate_key(password: str, salt: bytes):
         algorithm: str = 'sha256'

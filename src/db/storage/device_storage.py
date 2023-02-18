@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from db.models import Device, User
 from db.postgres import db
 

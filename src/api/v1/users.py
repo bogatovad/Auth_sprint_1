@@ -4,117 +4,61 @@ from http import HTTPStatus
 from flask import jsonify, make_response
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt, jwt_required)
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
+from db.storage.device_storage import DeviceStorage
+from db.storage.history_storage import HistoryAuthStorage
+from db.redis import redis_client
 
-from db.base_user_storage import PostgresUserStorage
-from db.crypto_pass import PBKDF2StoragePassword
-from db.device_storage import DeviceStorage
-from db.history_auth_storage import HistoryAuthStorage
-from db.redis_client import redis_client
-
-sign_up_parser = reqparse.RequestParser()
-sign_up_parser.add_argument(
-    "login",
-    dest="login",
-    location="form",
-    required=True,
-    type=str,
-    help="Login required",
-)
-sign_up_parser.add_argument(
-    "password",
-    dest="password",
-    type=str,
-    location="form",
-    required=True,
-    help="Password required",
-)
-sign_up_parser.add_argument(
-    "email",
-    dest="email",
-    type=str,
-    location="form",
-    required=True,
-    help="Email required",
-)
-sign_up_parser.add_argument("last_name", dest="last_name", location="form", required=False, type=str)
-sign_up_parser.add_argument("first_name", dest="first_name", location="form", required=False, type=str)
-sign_up_parser.add_argument("User-Agent", dest="user_agent", location="headers")
+from api.v1.arguments import create_parser_args_signup, create_parser_args_login
+from services.auth_service import JwtAuth
+from services.exceptions import AuthError
 
 
 class SignUp(Resource):
-    def post(self):
+    """Реализация метода signup."""
+
+    @staticmethod
+    def post():
         """Метод регистрации пользователя."""
-        args = sign_up_parser.parse_args()
+        args = create_parser_args_signup()
 
         login = args["login"]
         password = args["password"]
         email = args["email"]
+        user_agent = args['user_agent']
 
-        storage = PostgresUserStorage()
-        password_checker = PBKDF2StoragePassword()
-
-        if storage.exists(login):
-            return {"message": f"User '{login}' exists. Choose another login."}, HTTPStatus.CONFLICT
-
-        user = storage.create(
-            login=login,
-            password=password_checker.create_hash(password),
-            email=email
-        )
+        auth_service = JwtAuth()
+        user = auth_service.signup(login, password, email)
 
         # сохранили устройство при регистрации пользователя
         # если в последующие разы вход будет осуществлен через другое устройство
         # то отсылаем уведомление.
 
         device_storage = DeviceStorage()
-        user_agent = args['user_agent']
         device_storage.create(name=user_agent, owner=user)
-
         return make_response(jsonify(message=f"User '{login}' successfully created"), HTTPStatus.OK)
 
 
-login_parser = reqparse.RequestParser()
-login_parser.add_argument(
-    "login",
-    dest="login",
-    location="form",
-    required=True,
-    type=str,
-    help="Login required",
-)
-login_parser.add_argument(
-    "password",
-    dest="password",
-    type=str,
-    location="form",
-    required=True,
-    help="Password required",
-)
-login_parser.add_argument("User-Agent", dest="user_agent", location="headers")
-
-
 class Login(Resource):
-    """
-    Класс для логина пользователя.
-    Параметры пользователя (логин, пароль, агент) находятся в args.
-    Создаются access и refresh токены и возвращаются пользователю.
-    """
+    """Реализация метода login."""
 
-    def post(self):
-        args = login_parser.parse_args()
+    @staticmethod
+    def post():
+        args = create_parser_args_login()
 
         login = args["login"]
+        password = args["password"]
         user_agent = args['user_agent']
 
-        storage = PostgresUserStorage()
+        auth_service = JwtAuth()
 
-        if not storage.exists(login):
-            return {"message": "Invalid credentials"}, HTTPStatus.UNAUTHORIZED
+        try:
+            user = auth_service.login(login, password)
+        except AuthError as error:
+            return {"message": error.message}, HTTPStatus.UNAUTHORIZED
 
-        user = storage.get(login=login)
         identity = user.id
-        access_token, refresh_token = create_refresh_token(identity), create_access_token(identity)
+        refresh_token, access_token = create_refresh_token(identity), create_access_token(identity)
 
         history_storage = HistoryAuthStorage()
         device_storage = DeviceStorage()
@@ -142,17 +86,16 @@ class Login(Resource):
 
 
 class Logout(Resource):
-    """Выход пользователя из аккаунта."""
+    """Реализация метода logout."""
 
     @jwt_required(refresh=True)
     def post(self):
         jwt = get_jwt()
-        # TODO реализовать redis_client.put_invalid_token(jwt)
         return make_response(jsonify(message="Log outed"), HTTPStatus.OK)
 
 
 class RefreshToken(Resource):
-    """Обновление refresh токена."""
+    """Реализация метода refresh."""
 
     @jwt_required(refresh=True)
     def get(self):

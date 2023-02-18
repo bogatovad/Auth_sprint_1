@@ -1,5 +1,3 @@
-"""Application containers module."""
-
 from dependency_injector import containers
 from dependency_injector.ext import flask
 from flask import Flask
