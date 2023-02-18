@@ -12,7 +12,7 @@ role = Blueprint('role', __name__, url_prefix='/api/v1/role')
 
 @role.post('/')
 def add_role():
-    role_name = request.args['name']
+    role_name = request.json['name']
     new_role = Role(name=role_name)
 
     db.session.add(new_role)
@@ -31,10 +31,10 @@ def all_roles():
 
 @role.put('/')
 def update_role():
-    id = request.args['id']
+    id = request.json['id']
     db_role = Role.query.get(id)
 
-    role_name = request.args['name']
+    role_name = request.json['name']
     db_role.name = role_name
     db.session.commit()
     role_schema = RoleSchema()
@@ -43,9 +43,13 @@ def update_role():
 
 @role.delete('/')
 def remove_role():
-    id = request.args['id']
+    id = request.json['id']
     db_role = Role.query.get(id)
     db.session.delete(db_role)
     db.session.commit()
-    return make_response('Successfully deleted', HTTPStatus.NO_CONTENT)  
-    
+    return make_response('Successfully deleted', HTTPStatus.NO_CONTENT)
+
+
+@role.post('/role_id>/user/<user_id>')
+def add_user_role():
+    pass
