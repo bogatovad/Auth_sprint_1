@@ -1,5 +1,4 @@
 import redis
-
 from core.config import CACHE_REFRESH_TOKEN_EXPIRATION_TIME
 
 
@@ -11,5 +10,11 @@ class RedisConnector:
     def set_user_refresh_token(self, user_id: str, refresh_token: str):
         self.db_for_refresh.set(user_id, refresh_token, ex=CACHE_REFRESH_TOKEN_EXPIRATION_TIME)
 
-    def set_user_invalid_access_token(self, user_id: str, access_token: str):
-        self.db_for_invalid_access.set(user_id, access_token)
+    def set_user_invalid_access_token(self, user_id: str, jti: str):
+        self.db_for_invalid_access.set(jti, user_id)
+
+    def check_if_access_token_is_invalid(self, jti: str) -> bool:
+        return self.db_for_invalid_access.get(jti) is not None
+
+
+redis_client = RedisConnector('127.0.0.1', '6379')
