@@ -1,4 +1,5 @@
 import logging
+import uuid
 from abc import ABC, abstractmethod
 
 from db.models import User
@@ -45,3 +46,7 @@ class PostgresUserStorage(BaseUserStorage):
 
     def change(self):
         pass
+
+    def get_by_id(self, id):
+        return User.query.filter_by(id=id).first()
+

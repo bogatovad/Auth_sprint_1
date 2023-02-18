@@ -2,16 +2,62 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import jsonify, make_response
-from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                get_jwt, jwt_required)
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt, jwt_required, get_jwt_identity
+)
 from flask_restful import Resource
+
+from api.v1.schemas import HistorySchemaOut
 from db.storage.device_storage import DeviceStorage
 from db.storage.history_storage import HistoryAuthStorage
 from db.redis import redis_client
 
-from api.v1.arguments import create_parser_args_signup, create_parser_args_login
+from api.v1.arguments import (
+    create_parser_args_signup,
+    create_parser_args_login,
+    create_parser_args_change_auth_data
+)
 from services.auth_service import JwtAuth
 from services.exceptions import AuthError
+from db.storage.user_storage import PostgresUserStorage
+
+
+class History(Resource):
+    """Реализация метода для получения истории авторизаций."""
+
+    @jwt_required()
+    def get(self):
+        identity = get_jwt_identity()
+        storage = PostgresUserStorage()
+        user = storage.get_by_id(identity)
+        history_schema = HistorySchemaOut()
+
+        # todo: cейчас не понимаю как на уровне схем подтянть устройство по id.
+        history = [history_schema.dump(item) for item in user.history]
+        return {user.login: history}
+
+
+class ChangePersonalData(Resource):
+    """Реализация метода по смене учетных данных."""
+
+    @jwt_required()
+    def post(self):
+        identity = get_jwt_identity()
+        storage = PostgresUserStorage()
+        user = storage.get_by_id(identity)
+        args = create_parser_args_change_auth_data()
+        login = args["login"]
+        password = args["password"]
+
+        if login is not None:
+            user.login = login
+        if password is not None:
+            user.password = password
+
+        # todo: что в таком случае делать с токеном?
+        return {'status': 'Your personal data has been chanced.'}
 
 
 class SignUp(Resource):

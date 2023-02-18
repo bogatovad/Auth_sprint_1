@@ -4,6 +4,7 @@ from flask_restful import Api
 from api.v1.urls import urls
 
 from .containers import ApplicationContainer
+from flask_marshmallow import Marshmallow
 
 
 def create_app():

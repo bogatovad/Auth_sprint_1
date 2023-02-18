@@ -25,3 +25,15 @@ def create_parser_args_login():
     login_parser.add_argument("password", **common_argument, required=True, help="Password required")
     login_parser.add_argument("User-Agent", dest="user_agent", location="headers")
     return login_parser.parse_args()
+
+
+def create_parser_args_change_auth_data():
+    common_argument = {
+        "location": "form",
+        "type": str,
+        "required": False
+    }
+    auth_change_parser = reqparse.RequestParser()
+    auth_change_parser.add_argument("login", **common_argument, help="Login required to change")
+    auth_change_parser.add_argument("password", **common_argument, help="Password required to change")
+    return auth_change_parser.parse_args()
