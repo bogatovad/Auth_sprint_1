@@ -9,7 +9,8 @@ from flask_jwt_extended import (
     get_jwt,
     get_jwt_identity,
 )
-from src import redis_client
+
+from db.redis import redis_client
 
 sign_up_parser = reqparse.RequestParser()
 sign_up_parser.add_argument(
