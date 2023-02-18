@@ -7,10 +7,11 @@ from flask_jwt_extended import (
     create_refresh_token,
     jwt_required,
     get_jwt,
-    get_jwt_identity,
+    get_jwt_identity
 )
 
-from db.redis import redis_client
+from db.redis_client import redis_client
+from core.config import REFRESH_TOKEN_EXPIRATION_TIMEDELTA, ACCESS_TOKEN_EXPERATION_TIMEDELTA
 
 sign_up_parser = reqparse.RequestParser()
 sign_up_parser.add_argument(
@@ -81,14 +82,13 @@ class Login(Resource):
 
     def post(self):
         args = login_parser.parse_args()
-        user_id = get_jwt_identity()  # Получаем id пользователя из jwt
         # TODO remove mock. Проверка наличия пользака в БД.
         #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
         user = True
         user_id = 'user_id'  # TODO заменить на айди из базы
         identity = "something"  # TODO Remove mock, use user.id or something else
-        access_token, refresh_token = create_access_token(identity), create_refresh_token(identity)
-
+        access_token = create_access_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
+        refresh_token = create_refresh_token(identity, expires_delta=REFRESH_TOKEN_EXPIRATION_TIMEDELTA)
         if not user:
             return {"message": "Invalid credentials"}, HTTPStatus.UNAUTHORIZED
 
@@ -104,10 +104,9 @@ class Logout(Resource):
 
     @jwt_required()
     def post(self):
-        # записать невалидный аксес
-        current_user = get_jwt_identity()
-        jwt = get_jwt()
-        # TODO реализовать redis_client.put_invalid_token(jwt)
+        user_id = get_jwt_identity()
+        jti = get_jwt()['jti']
+        redis_client.set_user_invalid_access_token(user_id=user_id, jti=jti)
         return make_response(jsonify(message="Log outed"), HTTPStatus.OK)
 
 
@@ -116,9 +115,10 @@ class RefreshToken(Resource):
 
     @jwt_required(refresh=True)
     def get(self):
-        identity = "something"  # TODO Remove mock, use user.id or something else
-        access_token, refresh_token = create_refresh_token(identity), create_access_token(identity)
-        # TODO реализовать redis_client.refresh_user_token(user_id, old_jwt, access_token)
+        identity = get_jwt_identity()  # TODO Remove mock, use user.id or something else
+        refresh_token = create_refresh_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
+        access_token = create_access_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
+        redis_client.set_user_refresh_token(identity, refresh_token)
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
             HTTPStatus.OK,
