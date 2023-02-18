@@ -2,7 +2,7 @@ from flask import Flask
 from flask_restful import Api
 from api.v1.urls import urls
 from flask_jwt_extended import JWTManager
-from flasgger import Swagger, swag_from
+from flasgger import Swagger
 
 from db.postgres import init_db
 
