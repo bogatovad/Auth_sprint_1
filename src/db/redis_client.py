@@ -21,4 +21,4 @@ class RedisConnector:
         return f"{user_id}_refresh_token"
 
 
-redis_client = RedisConnector('127.0.0.1', '6379')  # TODO заменить на конфиги
+redis_client = RedisConnector('redis', '6379')  # TODO заменить на конфиги
