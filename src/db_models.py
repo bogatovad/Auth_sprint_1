@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Table, Column, ForeignKey, MetaData
+from sqlalchemy import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 
 from db.postgres import db
@@ -52,15 +52,21 @@ class Role(db.Model):
     def __repr__(self):
         return f'<Role {self.name}>'
 
+    def add_permission(self, permission):
+        self.permissions.append(permission)
+    
+
 
 class Permission(db.Model):
     """Модель, описывающая пользовательские права."""
     __tablename__ = 'permissions'
+    __table_args__ = (
+        db.UniqueConstraint("endpoint", "method"),
+    )
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    #name = db.Column(db.String(120), unique=True, nullable=False)
     endpoint = db.Column(db.String(300), nullable=False)
-    method = db.Column(db.String(10), unique=True, nullable=False)
+    method = db.Column(db.String(10), nullable=False)
 
 
 class Device(db.Model):

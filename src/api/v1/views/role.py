@@ -1,11 +1,11 @@
 from http import HTTPStatus
 
 from flask import Blueprint, jsonify, request, make_response
-from flask_restful import Resource
 
-from db_models import Role, User
+from db_models import Role, User, Permission
 from ..schemas import RoleSchema, UserSchema
 from db.extensions import db
+from .utils import get_or_create, update_permissions
 
 role = Blueprint('role', __name__, url_prefix='/api/v1/role')
 
@@ -13,8 +13,9 @@ role = Blueprint('role', __name__, url_prefix='/api/v1/role')
 @role.post('/')
 def add_role():
     role_name = request.json['name']
+    permissions_list = request.json['permissions']
     new_role = Role(name=role_name)
-
+    update_permissions(db.session, Permission, new_role, permissions_list)
     db.session.add(new_role)
     db.session.commit()
     role_schema = RoleSchema()
@@ -33,8 +34,9 @@ def all_roles():
 def update_role():
     role_id = request.json['id']
     role = Role.query.get_or_404(role_id)
-    role_name = request.json['name']
-    role.name = role_name
+    permissions_list = request.json['permissions']
+    role.permissions = []
+    update_permissions(db.session, Permission, role)
     db.session.commit()
     role_schema = RoleSchema()
     return make_response(role_schema.jsonify(role), HTTPStatus.OK)
