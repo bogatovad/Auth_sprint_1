@@ -35,7 +35,7 @@ sign_up_parser.add_argument(
     dest="email",
     type=str,
     location="form",
-    required=True,
+    required=False,
     help="Email required",
 )
 sign_up_parser.add_argument("last_name", dest="last_name", location="form", required=False, type=str)
@@ -61,7 +61,7 @@ class SignUp(Resource):
                 password:
                   type: string
         responses:
-          200:
+          201:
             description: User created
             schema:
               message:
@@ -80,7 +80,7 @@ class SignUp(Resource):
         user_exists = False
         if user_exists:
             return {"message": f"User '{login}' exists. Choose another login."}, HTTPStatus.CONFLICT
-        return make_response(jsonify(message=f"User '{login}' successfully created"), HTTPStatus.OK)
+        return make_response(jsonify(message=f"User '{login}' successfully created"), HTTPStatus.CREATED)
 
 
 login_parser = reqparse.RequestParser()
