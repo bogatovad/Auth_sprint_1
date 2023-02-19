@@ -13,7 +13,7 @@ class User(db.Model):
     login = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     email = db.Column(db.String(120), nullable=False)
-    roles = db.relationship(
+    role = db.relationship(
         'Role',
         secondary='related_roles',
         lazy='subquery',
@@ -24,15 +24,36 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.login}>'
 
+    @property
+    def roles_list(self) -> list[str]:
+        return [role.name for role in self.role]
+
 
 class Role(db.Model):
+    """Модель, описывающая пользовательские роли."""
     __tablename__ = 'roles'
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     name = db.Column(db.String(120), unique=True, nullable=False)
+    permissions = db.relationship(
+        'Permission',
+        secondary='related_permissions',
+        lazy='subquery',
+        backref=db.backref("permissions", lazy=True),
+    )
 
     def __repr__(self):
         return f'<Role {self.name}>'
+
+
+class Permission(db.Model):
+    """Модель, описывающая пользовательские права."""
+    __tablename__ = 'permissions'
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    #name = db.Column(db.String(120), unique=True, nullable=False)
+    endpoint = db.Column(db.String(300), nullable=False)
+    method = db.Column(db.String(10), unique=True, nullable=False)
 
 
 class Device(db.Model):
@@ -69,5 +90,12 @@ related_roles = Table(
     'related_roles',
     metadata,
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
+    Column("role_id", UUID(as_uuid=True), ForeignKey("roles.id"), primary_key=True)
+)
+
+related_permissions = Table(
+    'related_permissions',
+    metadata,
+    Column("permission_id", UUID(as_uuid=True), ForeignKey("permissions.id"), primary_key=True),
     Column("role_id", UUID(as_uuid=True), ForeignKey("roles.id"), primary_key=True)
 )
