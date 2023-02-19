@@ -36,7 +36,7 @@ def update_role():
     role = Role.query.get_or_404(role_id)
     permissions_list = request.json['permissions']
     role.permissions = []
-    update_permissions(db.session, Permission, role)
+    update_permissions(db.session, Permission, role, permissions_list)
     db.session.commit()
     role_schema = RoleSchema()
     return make_response(role_schema.jsonify(role), HTTPStatus.OK)
