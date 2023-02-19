@@ -14,3 +14,15 @@ def test_signup_ok(client, login, password, user):
 
     result = response.json
     assert result == {"message": f"User '{login}' successfully created"}
+
+
+def test_login_ok(client, user, login, password):
+    response = client.post(
+        path="/api/v1/auth/login",
+        data={
+            "login": login,
+            "password": password,
+        },
+    )
+
+    assert response.status_code == http.HTTPStatus.OK
