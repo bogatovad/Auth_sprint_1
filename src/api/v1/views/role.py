@@ -73,4 +73,11 @@ def revoke_user_role():
         user_schema = UserSchema()
         return make_response(user_schema.jsonify(user), HTTPStatus.OK)
     return make_response(HTTPStatus.BAD_REQUEST)
- 
+
+
+@role.get('/permissions/user/<user_id>')
+def get_user_permissions():
+    user_id = request.view_args['user_id']
+    user = User.query.get_or_404(user_id)
+    return user.permissions_list
+    

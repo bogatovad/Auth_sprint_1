@@ -24,9 +24,16 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.login}>'
 
+    def add_role(self, role):
+        self.role.append(role)
+
     @property
     def roles_list(self) -> list[str]:
-        return [role.name for role in self.role]
+        return [role.permissions for role in self.role]
+
+    @property
+    def permissions_list(self) -> list[str]:
+        return set([role.permissions for role in self.role])
 
 
 class Role(db.Model):
