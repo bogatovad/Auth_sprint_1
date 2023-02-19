@@ -26,3 +26,7 @@ def test_login_ok(client, user, login, password):
     )
 
     assert response.status_code == http.HTTPStatus.OK
+
+    result = response.json
+    assert "access_token" in result
+    assert "refresh_token" in result
