@@ -38,3 +38,15 @@ def test_logout_ok(client, auth_access_header):
         headers=auth_access_header,
     )
     assert response.status_code == http.HTTPStatus.OK
+
+
+def test_refresh_ok(client, auth_refresh_header):
+    response = client.get(
+        path="/api/v1/auth/refresh",
+        headers=auth_refresh_header,
+    )
+    assert response.status_code == http.HTTPStatus.OK
+
+    result = response.json
+    assert "access_token" in result
+    assert "refresh_token" in result
