@@ -1,30 +1,4 @@
-import pytest
 import http
-from main import app
-
-
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
-
-
-@pytest.fixture
-def login():
-    return f"login"
-
-
-@pytest.fixture
-def password():
-    return "password"
-
-
-@pytest.fixture
-def user(login, password):
-    return {
-        "login": login,
-        "password": password
-    }
 
 
 def test_signup_ok(client, login, password, user):
@@ -39,5 +13,4 @@ def test_signup_ok(client, login, password, user):
     assert response.status_code == http.HTTPStatus.CREATED
 
     result = response.json
-    assert result == {'message': f"User '{login}' successfully created"}
-
+    assert result == {"message": f"User '{login}' successfully created"}

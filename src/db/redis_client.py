@@ -8,7 +8,9 @@ class RedisConnector:
         self.db_for_invalid_access = redis.Redis(host=redis_host, port=redis_port, db=1)
 
     def set_user_refresh_token(self, user_id: str, refresh_token: str):
-        self.db_for_refresh.set(user_id, refresh_token, ex=CACHE_REFRESH_TOKEN_EXPIRATION_TIME)
+        self.db_for_refresh.set(
+            user_id, refresh_token, ex=CACHE_REFRESH_TOKEN_EXPIRATION_TIME
+        )
 
     def set_user_invalid_access_token(self, user_id: str, jti: str):
         self.db_for_invalid_access.set(jti, user_id)
@@ -17,4 +19,4 @@ class RedisConnector:
         return self.db_for_invalid_access.get(jti) is not None
 
 
-redis_client = RedisConnector('127.0.0.1', '6379')
+redis_client = RedisConnector("127.0.0.1", "6379")

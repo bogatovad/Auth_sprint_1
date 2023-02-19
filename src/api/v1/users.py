@@ -7,11 +7,14 @@ from flask_jwt_extended import (
     create_refresh_token,
     jwt_required,
     get_jwt,
-    get_jwt_identity
+    get_jwt_identity,
 )
 
 from db.redis_client import redis_client
-from core.config import REFRESH_TOKEN_EXPIRATION_TIMEDELTA, ACCESS_TOKEN_EXPERATION_TIMEDELTA
+from core.config import (
+    REFRESH_TOKEN_EXPIRATION_TIMEDELTA,
+    ACCESS_TOKEN_EXPERATION_TIMEDELTA,
+)
 
 sign_up_parser = reqparse.RequestParser()
 sign_up_parser.add_argument(
@@ -38,8 +41,12 @@ sign_up_parser.add_argument(
     required=False,
     help="Email required",
 )
-sign_up_parser.add_argument("last_name", dest="last_name", location="form", required=False, type=str)
-sign_up_parser.add_argument("first_name", dest="first_name", location="form", required=False, type=str)
+sign_up_parser.add_argument(
+    "last_name", dest="last_name", location="form", required=False, type=str
+)
+sign_up_parser.add_argument(
+    "first_name", dest="first_name", location="form", required=False, type=str
+)
 
 
 class SignUp(Resource):
@@ -79,8 +86,12 @@ class SignUp(Resource):
         #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
         user_exists = False
         if user_exists:
-            return {"message": f"User '{login}' exists. Choose another login."}, HTTPStatus.CONFLICT
-        return make_response(jsonify(message=f"User '{login}' successfully created"), HTTPStatus.CREATED)
+            return {
+                "message": f"User '{login}' exists. Choose another login."
+            }, HTTPStatus.CONFLICT
+        return make_response(
+            jsonify(message=f"User '{login}' successfully created"), HTTPStatus.CREATED
+        )
 
 
 login_parser = reqparse.RequestParser()
@@ -134,10 +145,14 @@ class Login(Resource):
         # TODO remove mock. Проверка наличия пользака в БД.
         #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
         user = True
-        user_id = 'user_id'  # TODO заменить на айди из базы
+        user_id = "user_id"  # TODO заменить на айди из базы
         identity = "something"  # TODO Remove mock, use user.id or something else
-        access_token = create_access_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
-        refresh_token = create_refresh_token(identity, expires_delta=REFRESH_TOKEN_EXPIRATION_TIMEDELTA)
+        access_token = create_access_token(
+            identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA
+        )
+        refresh_token = create_refresh_token(
+            identity, expires_delta=REFRESH_TOKEN_EXPIRATION_TIMEDELTA
+        )
         if not user:
             return {"message": "Invalid credentials"}, HTTPStatus.UNAUTHORIZED
 
@@ -168,7 +183,7 @@ class Logout(Resource):
 
         """
         user_id = get_jwt_identity()
-        jti = get_jwt()['jti']
+        jti = get_jwt()["jti"]
         redis_client.set_user_invalid_access_token(user_id=user_id, jti=jti)
         return make_response(jsonify(message="Log outed"), HTTPStatus.OK)
 
@@ -196,8 +211,12 @@ class RefreshToken(Resource):
                   description: Refresh_token
         """
         identity = get_jwt_identity()  # TODO Remove mock, use user.id or something else
-        refresh_token = create_refresh_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
-        access_token = create_access_token(identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA)
+        refresh_token = create_refresh_token(
+            identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA
+        )
+        access_token = create_access_token(
+            identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA
+        )
         redis_client.set_user_refresh_token(identity, refresh_token)
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
