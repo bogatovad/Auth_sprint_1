@@ -1,5 +1,4 @@
-from db.models import Permission
-from db.models import Role
+from db.models import Permission, Role
 from db.postgres import db
 
 

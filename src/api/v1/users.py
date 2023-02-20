@@ -21,9 +21,9 @@ from api.v1.arguments import (
     create_parser_args_login,
     create_parser_args_change_auth_data
 )
-from services.auth_service import JwtAuth
-from services.exceptions import AuthError
 from db.storage.user_storage import PostgresUserStorage
+from services.auth_service import JwtAuth
+from services.exceptions import AuthError, DuplicateUserError
 
 
 class History(Resource):
@@ -34,10 +34,7 @@ class History(Resource):
         identity = get_jwt_identity()
         storage = PostgresUserStorage()
         user = storage.get_by_id(identity)
-        history_schema = HistorySchemaOut()
-
-        # todo: cейчас не понимаю как на уровне схем подтянть устройство по id.
-        history = [history_schema.dump(item) for item in user.history]
+        history = [HistorySchemaOut().dump(item) for item in user.history]
         return {user.login: history}
 
 
@@ -58,8 +55,7 @@ class ChangePersonalData(Resource):
         if password is not None:
             user.password = password
 
-        # todo: что в таком случае делать с токеном?
-        return {'status': 'Your personal data has been chanced.'}
+        return {'status': 'Your personal data has been changed.'}
 
 
 class SignUp(Resource):
@@ -106,14 +102,18 @@ class SignUp(Resource):
         user_agent = args['user_agent']
 
         auth_service = JwtAuth()
-        user = auth_service.signup(login, password, email)
+
+        try:
+            user = auth_service.signup(login, password, email)
+        except DuplicateUserError as error:
+            return {"message": error.message}, HTTPStatus.CONFLICT
 
         # сохранили устройство при регистрации пользователя
         # если в последующие разы вход будет осуществлен через другое устройство
         # то отсылаем уведомление.
 
         device_storage = DeviceStorage()
-        device_storage.create(name=user_agent, owner=user)
+        device_storage.get_or_create(name=user_agent, owner=user)
         return make_response(
             jsonify(message=f"User '{login}' successfully created"), HTTPStatus.CREATED
         )
@@ -168,7 +168,7 @@ class Login(Resource):
 
         if not devices_user:
             # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
-            # ...
+            # Будет реализовано в следующем спринте.
 
             # сохраняем новое устройство пользователя.
             current_device = device_storage.create(name=user_agent, owner=user)
