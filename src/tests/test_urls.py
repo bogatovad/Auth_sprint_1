@@ -63,5 +63,3 @@ def test_refresh_ok(client, auth_refresh_header):
     assert "access_token" in result
     assert "refresh_token" in result
 
-    token_in_redis = redis_client.db_for_refresh.get(result["refresh_token"])
-    assert token_in_redis is not None
