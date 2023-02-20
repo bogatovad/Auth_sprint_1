@@ -23,6 +23,9 @@ class User(db.Model):
     # C пользователем связана его история.
     history = db.relationship("HistoryAuth", backref='user', lazy=True)
 
+    # C пользователем связаны его роли.
+    roles = db.relationship("Role", secondary='users_roles')
+
     def __repr__(self):
         return f'<User {self.login}>'
 
@@ -55,4 +58,54 @@ class HistoryAuth(db.Model):
 
     # С каждой авторизацией связано устройство с которого она была выполнена.
     device_id = db.Column(db.Integer, db.ForeignKey('device.id'), nullable=False)
+
+
+class Permission(db.Model):
+    """Модель, описывающая доступ к ресурсу."""
+
+    __tablename__ = 'permissions'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
+    name = db.Column(db.String, nullable=False)
+
+    # доступ описывается ресурсом и методом.
+    resource = db.Column(db.String, nullable=False)
+    method = db.Column(db.String, nullable=False)
+
+    roles = db.relationship("Role", secondary='permissions_roles')
+
+
+class PermissionsRole(db.Model):
+    """Промежуточная модель-связка для Role и Permissions."""
+
+    __tablename__ = 'permissions_roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    permission_id = db.Column(db.Integer, db.ForeignKey('permissions.id'))
+
+
+class UserRole(db.Model):
+    """Промежуточная модель-связка для Role и Permissions."""
+
+    __tablename__ = 'users_roles'
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'))
+
+
+class Role(db.Model):
+    """Модель, описывающая роль."""
+
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
+    name = db.Column(db.String, nullable=False)
+
+    # Набор прав (доступов), которые содержит данная роль.
+    permissions = db.relationship("Permission", secondary='permissions_roles')
+
+    users = db.relationship("User", secondary='users_roles')
+
 

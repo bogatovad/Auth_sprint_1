@@ -1,11 +1,7 @@
-import logging
-import uuid
 from abc import ABC, abstractmethod
 
 from db.models import User
 from db.postgres import db
-
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="w")
 
 
 class BaseUserStorage(ABC):
