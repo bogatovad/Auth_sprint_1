@@ -15,7 +15,7 @@ from db.storage.device_storage import DeviceStorage
 from db.storage.history_storage import HistoryAuthStorage
 from db.storage.user_storage import PostgresUserStorage
 from services.auth_service import JwtAuth
-from services.exceptions import AuthError
+from services.exceptions import AuthError, DuplicateUserError
 
 
 class History(Resource):
@@ -64,14 +64,18 @@ class SignUp(Resource):
         user_agent = args['user_agent']
 
         auth_service = JwtAuth()
-        user = auth_service.signup(login, password, email)
+
+        try:
+            user = auth_service.signup(login, password, email)
+        except DuplicateUserError as error:
+            return {"message": error.message}, HTTPStatus.CONFLICT
 
         # сохранили устройство при регистрации пользователя
         # если в последующие разы вход будет осуществлен через другое устройство
         # то отсылаем уведомление.
 
         device_storage = DeviceStorage()
-        device_storage.create(name=user_agent, owner=user)
+        device_storage.get_or_create(name=user_agent, owner=user)
         return make_response(jsonify(message=f"User '{login}' successfully created"), HTTPStatus.OK)
 
 

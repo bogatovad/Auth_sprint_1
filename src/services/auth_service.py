@@ -4,7 +4,7 @@ from http import HTTPStatus
 from db.crypto_pass import PBKDF2StoragePassword
 from db.models import User
 from db.storage.user_storage import PostgresUserStorage
-from services.exceptions import AuthError
+from services.exceptions import AuthError, DuplicateUserError
 
 
 class BaseAuth(ABC):
@@ -35,7 +35,7 @@ class JwtAuth(BaseAuth):
         password_checker = PBKDF2StoragePassword()
 
         if storage.exists(login):
-            return {"message": f"User '{login}' exists. Choose another login."}, HTTPStatus.CONFLICT
+            raise DuplicateUserError()
 
         return storage.create(
             login=login,
