@@ -2,6 +2,7 @@ import http
 from db.redis_client import redis_client
 from flask_jwt_extended import get_jwt_identity, get_jwt
 from db.storage.user_storage import PostgresUserStorage
+from services import exceptions
 
 AUTH_URL = "/api/v1/auth"
 
@@ -54,9 +55,10 @@ def test_nonexistent_login(client):
     )
 
     assert response.status_code == http.HTTPStatus.UNAUTHORIZED
+    assert response.json["message"] == exceptions.AuthError().message
 
 
-def test_login_wihout_password(client):
+def test_login_without_password(client):
     response = client.post(
         path=f"{AUTH_URL}/login",
         data={
@@ -65,6 +67,7 @@ def test_login_wihout_password(client):
     )
 
     assert response.status_code == http.HTTPStatus.BAD_REQUEST
+    assert response.json["message"] == {'password': 'Password required'}
 
 
 def test_login_wihout_credentials(client):
