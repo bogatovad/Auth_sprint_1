@@ -30,6 +30,9 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.login}>'
 
+    def add_role(self, role):
+        self.roles.append(role)
+
 
 class Device(db.Model):
     """Модель, описывающая устройство пользователя user."""
@@ -92,7 +95,7 @@ class UserRole(db.Model):
 
     __tablename__ = 'users_roles'
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'))
 

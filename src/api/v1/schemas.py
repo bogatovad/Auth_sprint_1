@@ -1,10 +1,9 @@
-from flask_marshmallow import Marshmallow
 from marshmallow import Schema, fields
-
-from db.extensions import ma
 
 
 class PermissionSchemaOut(Schema):
+    """Схема для возвращения устройства доступа."""
+
     resource = fields.String()
     method = fields.String()
 
@@ -14,6 +13,11 @@ class RoleSchemaOut(Schema):
 
     name = fields.String()
     permissions = fields.Nested(PermissionSchemaOut, many=True)
+
+
+class ListRoleSchemaOut(Schema):
+    """Схема для возвращения устройства пользователя."""
+    roles = fields.Nested(RoleSchemaOut, many=True)
 
 
 class DeviceSchemaOut(Schema):
@@ -27,3 +31,10 @@ class HistorySchemaOut(Schema):
 
     date_auth = fields.DateTime()
     device = fields.Nested(DeviceSchemaOut)
+
+
+class UserSchemaOut(Schema):
+    """Схема для возвращения пользовтеля."""
+
+    login = fields.String()
+    roles = fields.Nested(RoleSchemaOut, many=True)
