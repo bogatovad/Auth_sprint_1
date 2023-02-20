@@ -18,8 +18,13 @@ def password():
 
 
 @pytest.fixture
-def user(login, password):
-    return {"login": login, "password": password}
+def email():
+    return "somemail@mail.ru"
+
+
+@pytest.fixture
+def user(login, password, email):
+    return {"login": login, "password": password, "email": email}
 
 
 @pytest.fixture

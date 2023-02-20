@@ -19,4 +19,4 @@ class RedisConnector:
         return self.db_for_invalid_access.get(jti) is not None
 
 
-redis_client = RedisConnector("127.0.0.1", "6379")
+redis_client = RedisConnector("redis", "6379")

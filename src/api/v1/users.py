@@ -2,7 +2,6 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import jsonify, make_response
-from flask_restful import Resource, reqparse
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -13,10 +12,6 @@ from flask_jwt_extended import (
 from flask_restful import Resource
 
 from db.redis_client import redis_client
-from core.config import (
-    REFRESH_TOKEN_EXPIRATION_TIMEDELTA,
-    ACCESS_TOKEN_EXPERATION_TIMEDELTA,
-)
 from api.v1.schemas import HistorySchemaOut
 from db.storage.device_storage import DeviceStorage
 from db.storage.history_storage import HistoryAuthStorage
@@ -72,7 +67,6 @@ class SignUp(Resource):
 
     @staticmethod
     def post():
-        """Метод регистрации пользователя."""
         """
         Sign up.
         ---
@@ -82,12 +76,15 @@ class SignUp(Resource):
             required:
               - login
               - password
+              - email
             schema:
               id: Credentials
               properties:
                 login:
                   type: string
                 password:
+                  type: string
+                email:
                   type: string
         responses:
           201:
@@ -162,7 +159,7 @@ class Login(Resource):
         except AuthError as error:
             return {"message": error.message}, HTTPStatus.UNAUTHORIZED
 
-        identity = user.id
+        identity = str(user.id)
         refresh_token, access_token = create_refresh_token(identity), create_access_token(identity)
 
         history_storage = HistoryAuthStorage()
@@ -182,7 +179,7 @@ class Login(Resource):
         history_storage.create(user=user, device=current_device, date_auth=datetime.now())
 
         # сохраняем refresh токен в редис.
-        redis_client.set_user_refresh_token(user.id, refresh_token)
+        redis_client.set_user_refresh_token(identity, refresh_token)
 
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
@@ -237,13 +234,9 @@ class RefreshToken(Resource):
                   type: string
                   description: Refresh_token
         """
-        identity = get_jwt_identity()  # TODO Remove mock, use user.id or something else
-        refresh_token = create_refresh_token(
-            identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA
-        )
-        access_token = create_access_token(
-            identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA
-        )
+        identity = get_jwt_identity()
+        refresh_token = create_refresh_token(identity)
+        access_token = create_access_token(identity)
         redis_client.set_user_refresh_token(identity, refresh_token)
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
