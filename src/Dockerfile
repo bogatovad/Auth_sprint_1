@@ -8,6 +8,7 @@ RUN groupadd -r auth && useradd -d /auth -r -g auth auth
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+ENV PYTHONPATH "${PYTHONPATH}:/src/"
 
 COPY .. .
 RUN chown auth:auth -R /auth
