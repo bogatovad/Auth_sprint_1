@@ -1,5 +1,6 @@
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
+from flasgger import Swagger
 
 from api.v1.urls import urls
 
@@ -18,6 +19,7 @@ def create_app():
 
     api = Api(app)
     jwt = JWTManager(app)
+    swag = Swagger(app)  # host:port/apidocs/
 
     for resource, url in urls:
         api.add_resource(resource, url)
