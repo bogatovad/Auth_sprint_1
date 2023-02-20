@@ -6,14 +6,9 @@ from core.config import config
 from .extensions import db
 
 
-def init_db(app: Flask):
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
-    db.init_app(app)
-
-
 db = SQLAlchemy()
 
 
 def init_db(app: Flask):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://app:123qwe@postgres/auth_database'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://auth:qwerty123@postgres/auth'
     db.init_app(app)

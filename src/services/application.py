@@ -1,5 +1,4 @@
 from flask_jwt_extended import JWTManager
-from flask_marshmallow import Marshmallow
 from flask_restful import Api
 
 from api.v1.urls import urls
