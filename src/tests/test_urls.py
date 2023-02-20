@@ -1,6 +1,7 @@
 import http
 from db.redis_client import redis_client
 from flask_jwt_extended import get_jwt_identity, get_jwt
+from db.storage.user_storage import PostgresUserStorage
 
 AUTH_URL = "/api/v1/auth"
 
@@ -13,6 +14,9 @@ def test_signup_ok(client, user, login):
     assert response.status_code == http.HTTPStatus.CREATED
     result = response.json
     assert result == {"message": f"User '{login}' successfully created"}
+
+    storage = PostgresUserStorage()
+    assert storage.exists(login=login) is True
 
 
 def test_signup_existent_user(client, user):
