@@ -1,11 +1,11 @@
 from http import HTTPStatus
 
-from flask import Blueprint, make_response, request, jsonify
+from flask import Blueprint, jsonify, make_response, request
 
-from db.postgres import db
 from db.models import Permission, Role, User
+from db.postgres import db
 
-from ..schemas import RoleSchemaOut, UserSchemaOut, ListRoleSchemaOut
+from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
 from .utils import update_permissions
 
 role = Blueprint('role', __name__, url_prefix='/api/v1/role')

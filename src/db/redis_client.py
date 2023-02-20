@@ -1,4 +1,5 @@
 import redis
+
 from core.config import CACHE_REFRESH_TOKEN_EXPIRATION_TIME
 
 

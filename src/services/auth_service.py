@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from http import HTTPStatus
 
 from db.crypto_pass import PBKDF2StoragePassword
 from db.models import User
@@ -18,11 +17,6 @@ class BaseAuth(ABC):
     @abstractmethod
     def login(self):
         """Метод аутентефикации."""
-        pass
-
-    @abstractmethod
-    def logout(self):
-        """Метод осуществялющий выход из сеанса."""
         pass
 
 
@@ -58,6 +52,3 @@ class JwtAuth(BaseAuth):
             raise AuthError()
 
         return user
-
-    def logout(self):
-        pass

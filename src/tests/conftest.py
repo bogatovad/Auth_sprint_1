@@ -1,8 +1,11 @@
-import pytest
-from services.application import create_app
-from db.postgres import init_db, db
 from random import randint
-from flask_jwt_extended import create_refresh_token, create_access_token
+
+import pytest
+from flask_jwt_extended import create_access_token, create_refresh_token
+
+from db.postgres import db, init_db
+from services.application import create_app
+
 
 @pytest.fixture()
 def app():

@@ -1,6 +1,8 @@
 import http
+
+from flask_jwt_extended import get_jwt, get_jwt_identity
+
 from db.redis_client import redis_client
-from flask_jwt_extended import get_jwt_identity, get_jwt
 from db.storage.user_storage import PostgresUserStorage
 from services import exceptions
 

@@ -1,10 +1,11 @@
-from flask_jwt_extended import JWTManager
-from flask_marshmallow import Marshmallow
-from flask_restful import Api
 from flasgger import Swagger
-from core.config import ACCESS_TOKEN_EXPERATION_TIMEDELTA, REFRESH_TOKEN_EXPIRATION_TIMEDELTA
+from flask_jwt_extended import JWTManager
+from flask_restful import Api
+
 from api.v1.urls import urls
 from api.v1.views.role import role
+from core.config import (ACCESS_TOKEN_EXPERATION_TIMEDELTA,
+                         REFRESH_TOKEN_EXPIRATION_TIMEDELTA)
 
 from .containers import ApplicationContainer
 
