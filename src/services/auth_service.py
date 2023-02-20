@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from http import HTTPStatus
 
 from db.crypto_pass import PBKDF2StoragePassword
 from db.models import User
 from db.storage.user_storage import PostgresUserStorage
-from services.exceptions import AuthError
+from services.exceptions import AuthError, DuplicateUserError
 
 
 class BaseAuth(ABC):
@@ -20,11 +19,6 @@ class BaseAuth(ABC):
         """Метод аутентефикации."""
         pass
 
-    @abstractmethod
-    def logout(self):
-        """Метод осуществялющий выход из сеанса."""
-        pass
-
 
 class JwtAuth(BaseAuth):
     """Реализация аутентефикации на jwt-токенах."""
@@ -35,7 +29,7 @@ class JwtAuth(BaseAuth):
         password_checker = PBKDF2StoragePassword()
 
         if storage.exists(login):
-            return {"message": f"User '{login}' exists. Choose another login."}, HTTPStatus.CONFLICT
+            raise DuplicateUserError()
 
         return storage.create(
             login=login,
@@ -58,6 +52,3 @@ class JwtAuth(BaseAuth):
             raise AuthError()
 
         return user
-
-    def logout(self):
-        pass

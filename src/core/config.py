@@ -1,4 +1,4 @@
-import os
+import datetime
 
 from pydantic import BaseSettings
 
@@ -37,5 +37,13 @@ class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
 
+CACHE_REFRESH_TOKEN_EXPIRATION_TIME = 15 * 60
+CACHE_ACCESS_TOKEN_EXPERATION_TIME = 10 * 24 * 60 * 60
+REFRESH_TOKEN_EXPIRATION_TIMEDELTA = datetime.timedelta(
+    CACHE_REFRESH_TOKEN_EXPIRATION_TIME
+)
+ACCESS_TOKEN_EXPERATION_TIMEDELTA = datetime.timedelta(
+    CACHE_ACCESS_TOKEN_EXPERATION_TIME
+)
 
 config = Config()

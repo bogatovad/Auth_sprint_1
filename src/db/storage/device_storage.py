@@ -16,3 +16,14 @@ class DeviceStorage:
 
     def filter(self, name: str, owner: User):
         return db.session.execute(db.Query(Device).filter(Device.name == name, Device.owner == owner))
+
+    @staticmethod
+    def get_or_create(**kwargs):
+        instance = db.session.query(Device).filter_by(**kwargs).first()
+        if instance:
+            return instance
+        else:
+            instance = Device(**kwargs)
+            db.session.add(instance)
+            db.session.commit()
+        return instance

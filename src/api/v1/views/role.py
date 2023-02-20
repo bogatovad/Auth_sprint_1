@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
-from flask import Blueprint, make_response, request, jsonify
+from flask import Blueprint, jsonify, make_response, request
 
-from db.postgres import db
 from db.models import Permission, Role, User
+from db.postgres import db
 
 from ..schemas import RoleSchemaOut, UserSchemaOut, ListRoleSchemaOut
 from .utils import set_permissions, return_error
