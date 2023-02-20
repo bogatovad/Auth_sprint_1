@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from http import HTTPStatus
 
 from db.crypto_pass import PBKDF2StoragePassword
-from db.storage.user_storage import PostgresUserStorage
 from db.models import User
+from db.storage.user_storage import PostgresUserStorage
 from services.exceptions import AuthError
 
 

@@ -16,3 +16,4 @@ Flask-SQLAlchemy
 psycopg2-binary
 dependency-injector
 marshmallow-sqlalchemy
+pydantic

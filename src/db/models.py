@@ -2,13 +2,14 @@ import uuid
 
 from sqlalchemy.dialects.postgresql import UUID
 
-from .postgres import db
+from db.postgres import db
 
 
 class User(db.Model):
     """Модель, описывающая пользователя."""
 
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     login = db.Column(db.String, unique=True, nullable=False)
@@ -29,11 +30,15 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.login}>'
 
+    def add_role(self, role):
+        self.roles.append(role)
+
 
 class Device(db.Model):
     """Модель, описывающая устройство пользователя user."""
 
     __tablename__ = 'device'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
     name = db.Column(db.String, nullable=False)
@@ -54,7 +59,7 @@ class HistoryAuth(db.Model):
 
     # С каждой авторизацией связан пользователь.
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=True)
-    date_auth = db.Column(db.DateTime, index=True)
+    date_auth = db.Column(db.DateTime)
 
     # С каждой авторизацией связано устройство с которого она была выполнена.
     device_id = db.Column(db.Integer, db.ForeignKey('device.id'), nullable=False)
@@ -64,9 +69,9 @@ class Permission(db.Model):
     """Модель, описывающая доступ к ресурсу."""
 
     __tablename__ = 'permissions'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
-    name = db.Column(db.String, nullable=False)
 
     # доступ описывается ресурсом и методом.
     resource = db.Column(db.String, nullable=False)
@@ -90,7 +95,7 @@ class UserRole(db.Model):
 
     __tablename__ = 'users_roles'
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'))
 
@@ -99,6 +104,7 @@ class Role(db.Model):
     """Модель, описывающая роль."""
 
     __tablename__ = 'roles'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
     name = db.Column(db.String, nullable=False)
@@ -107,5 +113,8 @@ class Role(db.Model):
     permissions = db.relationship("Permission", secondary='permissions_roles')
 
     users = db.relationship("User", secondary='users_roles')
+
+    def add_permission(self, permission):
+        self.permissions.append(permission)
 
 

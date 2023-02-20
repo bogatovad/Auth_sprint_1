@@ -1,10 +1,11 @@
 from flask_jwt_extended import JWTManager
+from flask_marshmallow import Marshmallow
 from flask_restful import Api
 
 from api.v1.urls import urls
+from api.v1.views.role import role
 
 from .containers import ApplicationContainer
-from flask_marshmallow import Marshmallow
 
 
 def create_app():
@@ -15,7 +16,7 @@ def create_app():
     app.container = container
 
     app.config["JWT_SECRET_KEY"] = "super-secret"
-
+    app.register_blueprint(role)
     api = Api(app)
     jwt = JWTManager(app)
 
