@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 
 from flask import jsonify, make_response
@@ -9,48 +10,69 @@ from flask_jwt_extended import (
     get_jwt,
     get_jwt_identity,
 )
+from flask_restful import Resource
 
 from db.redis_client import redis_client
 from core.config import (
     REFRESH_TOKEN_EXPIRATION_TIMEDELTA,
     ACCESS_TOKEN_EXPERATION_TIMEDELTA,
 )
+from api.v1.schemas import HistorySchemaOut
+from db.storage.device_storage import DeviceStorage
+from db.storage.history_storage import HistoryAuthStorage
 
-sign_up_parser = reqparse.RequestParser()
-sign_up_parser.add_argument(
-    "login",
-    dest="login",
-    location="form",
-    required=True,
-    type=str,
-    help="Login required",
+from api.v1.arguments import (
+    create_parser_args_signup,
+    create_parser_args_login,
+    create_parser_args_change_auth_data
 )
-sign_up_parser.add_argument(
-    "password",
-    dest="password",
-    type=str,
-    location="form",
-    required=True,
-    help="Password required",
-)
-sign_up_parser.add_argument(
-    "email",
-    dest="email",
-    type=str,
-    location="form",
-    required=False,
-    help="Email required",
-)
-sign_up_parser.add_argument(
-    "last_name", dest="last_name", location="form", required=False, type=str
-)
-sign_up_parser.add_argument(
-    "first_name", dest="first_name", location="form", required=False, type=str
-)
+from services.auth_service import JwtAuth
+from services.exceptions import AuthError
+from db.storage.user_storage import PostgresUserStorage
+
+
+class History(Resource):
+    """Реализация метода для получения истории авторизаций."""
+
+    @jwt_required()
+    def get(self):
+        identity = get_jwt_identity()
+        storage = PostgresUserStorage()
+        user = storage.get_by_id(identity)
+        history_schema = HistorySchemaOut()
+
+        # todo: cейчас не понимаю как на уровне схем подтянть устройство по id.
+        history = [history_schema.dump(item) for item in user.history]
+        return {user.login: history}
+
+
+class ChangePersonalData(Resource):
+    """Реализация метода по смене учетных данных."""
+
+    @jwt_required()
+    def post(self):
+        identity = get_jwt_identity()
+        storage = PostgresUserStorage()
+        user = storage.get_by_id(identity)
+        args = create_parser_args_change_auth_data()
+        login = args["login"]
+        password = args["password"]
+
+        if login is not None:
+            user.login = login
+        if password is not None:
+            user.password = password
+
+        # todo: что в таком случае делать с токеном?
+        return {'status': 'Your personal data has been chanced.'}
 
 
 class SignUp(Resource):
-    def post(self):
+    """Реализация метода signup."""
+
+    @staticmethod
+    def post():
+        """Метод регистрации пользователя."""
         """
         Sign up.
         ---
@@ -80,47 +102,33 @@ class SignUp(Resource):
                 type: string
                 example: User '{login}' exists. Choose another login.
         """
-        args = sign_up_parser.parse_args()
+        args = create_parser_args_signup()
         login = args["login"]
-        # TODO remove mock. Проверка наличия пользака в БД.
-        #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
-        user_exists = False
-        if user_exists:
-            return {
-                "message": f"User '{login}' exists. Choose another login."
-            }, HTTPStatus.CONFLICT
+        password = args["password"]
+        email = args["email"]
+        user_agent = args['user_agent']
+
+        auth_service = JwtAuth()
+        user = auth_service.signup(login, password, email)
+
+        # сохранили устройство при регистрации пользователя
+        # если в последующие разы вход будет осуществлен через другое устройство
+        # то отсылаем уведомление.
+
+        device_storage = DeviceStorage()
+        device_storage.create(name=user_agent, owner=user)
         return make_response(
             jsonify(message=f"User '{login}' successfully created"), HTTPStatus.CREATED
         )
 
 
-login_parser = reqparse.RequestParser()
-login_parser.add_argument(
-    "login",
-    dest="login",
-    location="form",
-    required=True,
-    type=str,
-    help="Login required",
-)
-login_parser.add_argument(
-    "password",
-    dest="password",
-    type=str,
-    location="form",
-    required=True,
-    help="Password required",
-)
-login_parser.add_argument("User-Agent", dest="agent", location="headers")
-
-
 class Login(Resource):
-    """Класс для логина пользователя.
+    """Реализация метода login.
     Параметры пользователя (логин, пароль, агент) находятся в args.
     Создаются access и refresh токены и возвращаются пользователю.
     """
-
-    def post(self):
+    @staticmethod
+    def post():
         """
         Login
         ---
@@ -141,22 +149,41 @@ class Login(Resource):
                 type: string
                 example: Unauthorized
         """
-        args = login_parser.parse_args()
-        # TODO remove mock. Проверка наличия пользака в БД.
-        #   Нужно вызвать метод класса (что-то вроде pg_connector.check_user) коннектора к постгре.
-        user = True
-        user_id = "user_id"  # TODO заменить на айди из базы
-        identity = "something"  # TODO Remove mock, use user.id or something else
-        access_token = create_access_token(
-            identity, expires_delta=ACCESS_TOKEN_EXPERATION_TIMEDELTA
-        )
-        refresh_token = create_refresh_token(
-            identity, expires_delta=REFRESH_TOKEN_EXPIRATION_TIMEDELTA
-        )
-        if not user:
-            return {"message": "Invalid credentials"}, HTTPStatus.UNAUTHORIZED
+        args = create_parser_args_login()
 
-        redis_client.set_user_refresh_token(user_id, refresh_token)
+        login = args["login"]
+        password = args["password"]
+        user_agent = args['user_agent']
+
+        auth_service = JwtAuth()
+
+        try:
+            user = auth_service.login(login, password)
+        except AuthError as error:
+            return {"message": error.message}, HTTPStatus.UNAUTHORIZED
+
+        identity = user.id
+        refresh_token, access_token = create_refresh_token(identity), create_access_token(identity)
+
+        history_storage = HistoryAuthStorage()
+        device_storage = DeviceStorage()
+        devices_user = list(device_storage.filter(name=user_agent, owner=user))
+
+        if not devices_user:
+            # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
+            # ...
+
+            # сохраняем новое устройство пользователя.
+            current_device = device_storage.create(name=user_agent, owner=user)
+        else:
+            current_device = device_storage.get(name=user_agent, owner=user)
+
+        # делаем запись в таблицу history_auth.
+        history_storage.create(user=user, device=current_device, date_auth=datetime.now())
+
+        # сохраняем refresh токен в редис.
+        redis_client.set_user_refresh_token(user.id, refresh_token)
+
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
             HTTPStatus.OK,
@@ -164,7 +191,7 @@ class Login(Resource):
 
 
 class Logout(Resource):
-    """Выход пользователя из аккаунта."""
+    """Реализация метода logout."""
 
     @jwt_required()
     def post(self):
@@ -189,7 +216,7 @@ class Logout(Resource):
 
 
 class RefreshToken(Resource):
-    """Обновление refresh токена."""
+    """Реализация метода refresh."""
 
     @jwt_required(refresh=True)
     def get(self):
