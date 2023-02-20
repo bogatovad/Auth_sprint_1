@@ -1,4 +1,4 @@
-from .users import Login, Logout, RefreshToken, SignUp, History, ChangePersonalData, Test
+from .users import Login, Logout, RefreshToken, SignUp, History, ChangePersonalData
 
 API_URL = "/api/v1"
 AUTH_URL = f"{API_URL}/auth"

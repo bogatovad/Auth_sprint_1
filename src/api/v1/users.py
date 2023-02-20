@@ -32,10 +32,7 @@ class History(Resource):
         identity = get_jwt_identity()
         storage = PostgresUserStorage()
         user = storage.get_by_id(identity)
-        history_schema = HistorySchemaOut()
-
-        # todo: cейчас не понимаю как на уровне схем подтянть устройство по id.
-        history = [history_schema.dump(item) for item in user.history]
+        history = [HistorySchemaOut().dump(item) for item in user.history]
         return {user.login: history}
 
 
@@ -56,8 +53,7 @@ class ChangePersonalData(Resource):
         if password is not None:
             user.password = password
 
-        # todo: что в таком случае делать с токеном?
-        return {'status': 'Your personal data has been chanced.'}
+        return {'status': 'Your personal data has been changed.'}
 
 
 class SignUp(Resource):
@@ -112,7 +108,7 @@ class Login(Resource):
 
         if not devices_user:
             # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
-            # ...
+            # Будет реализовано в следующем спринте.
 
             # сохраняем новое устройство пользователя.
             current_device = device_storage.create(name=user_agent, owner=user)

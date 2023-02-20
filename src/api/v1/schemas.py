@@ -1,8 +1,15 @@
-from db.extensions import ma
-from db.models import HistoryAuth
+from marshmallow import Schema, fields
 
 
-class HistorySchemaOut(ma.SQLAlchemyAutoSchema):
+class DeviceSchemaOut(Schema):
+    """Схема для возвращения устройства пользователя."""
+
+    name = fields.String()
+
+
+class HistorySchemaOut(Schema):
     """Схема для возвращения истории авторизации пользователя."""
-    class Meta:
-        model = HistoryAuth
+
+    date_auth = fields.DateTime()
+    device = fields.Nested(DeviceSchemaOut)
+
