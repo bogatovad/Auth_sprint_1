@@ -1,49 +1,68 @@
-import pytest
-from main import app
+import http
+from db.redis import redis_client
+from db.models import User
 
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
+AUTH_URL = "/api/v1/auth"
 
 
-@pytest.fixture
-def login():
-    return "login"
+def test_signup_ok(client, user, login):
+    response = client.post(
+        path=f"{AUTH_URL}/signup",
+        data=user
+    )
+    assert response.status_code == http.HTTPStatus.OK
+    result = response.json
+    assert result == {"message": f"User '{login}' successfully created"}
 
 
-@pytest.fixture
-def password():
-    return "password"
+def test_login_ok(client, login, password):
+    response = client.post(
+        path=f"{AUTH_URL}/login",
+        data={
+            "login": login,
+            "password": password,
+        },
+    )
+
+    assert response.status_code == http.HTTPStatus.OK
+
+    result = response.json
+
+    assert "access_token" in result
+    assert "refresh_token" in result
+
+    # test logout with access token.
+
+    bearer_header = {"Authorization": f"Bearer {result['refresh_token']}"}
+    response = client.post(
+        path=f"{AUTH_URL}/logout",
+        headers=bearer_header,
+    )
+    assert response.status_code == http.HTTPStatus.OK
 
 
-@pytest.fixture
-def email():
-    return "somemail@mail.ru"
+def test_nonexistent_login(client):
+    response = client.post(
+        path=f"{AUTH_URL}/login",
+        data={
+            "login": "nonexistent",
+            "password": "password",
+        },
+    )
+
+    assert response.status_code == http.HTTPStatus.UNAUTHORIZED
 
 
-@pytest.fixture
-def user(login, password, email):
-    return {"login": login, "password": password, "email": email}
+def test_refresh_ok(client, auth_refresh_header):
+    response = client.get(
+        path=f"{AUTH_URL}/refresh",
+        headers=auth_refresh_header,
+    )
+    assert response.status_code == http.HTTPStatus.OK
 
+    result = response.json
+    assert "access_token" in result
+    assert "refresh_token" in result
 
-@pytest.fixture
-def access_token(user):
-    # TODO Remove hardcode
-    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3NjgyMjUyOSwianRpIjoiYTFkYjkxOTctNmEwYy00NGU4LWFjMWItMTZmZDY3MDExNWRhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InNvbWV0aGluZyIsIm5iZiI6MTY3NjgyMjUyOSwiZXhwIjo3NjMyNjQyMjUyOX0.DEQDfGARGbiK5_XbWdAR2AdzRVbyc64gVdYQMbvuEBU"
-
-
-@pytest.fixture
-def refresh_token(user):
-    # TODO Remove hardcode
-    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3NjgyMjUyOSwianRpIjoiYzhkZDM1N2ItM2VkZC00NjUwLWIyZTEtY2I1MWZhNDg0NjI5IiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJzb21ldGhpbmciLCJuYmYiOjE2NzY4MjI1MjksImV4cCI6MTc1NDU4MjUyOX0.l8BSAF2l4dWuAnEqjghVCIW1ZzPUw6sfdMf1Q0VMt5Y"
-
-
-@pytest.fixture
-def auth_access_header(access_token):
-    return {"Authorization": f"Bearer {access_token}"}
-
-
-@pytest.fixture
-def auth_refresh_header(refresh_token):
-    return {"Authorization": f"Bearer {refresh_token}"}
+    token_in_redis = redis_client.db_for_refresh.get(result["refresh_token"])
+    assert token_in_redis is not None

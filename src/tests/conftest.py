@@ -1,18 +1,36 @@
+import random
+
 import pytest
 from main import app
+from services.application import create_app
+from db.postgres import init_db, db
+from random import randint
 
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
+@pytest.fixture()
+def app():
+    app = create_app()
+    app.config.update({
+        "TESTING": True,
+    })
+
+    init_db(app)
+    app.app_context().push()
+    db.create_all()
+
+    yield app
 
 
-@pytest.fixture
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+
+
+@pytest.fixture(scope='session')
 def login():
-    return "login"
+    return f"login_{randint(1, 1000)}"
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def password():
     return "password"
 
