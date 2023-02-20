@@ -1,4 +1,5 @@
 import os
+
 from pydantic import BaseSettings, Field
 
 
@@ -11,6 +12,7 @@ class AuthSettings(BaseSettings):
     redis_host: str = Field('redis_auth', env='REDIS_HOST')
     redis_port: int = Field(6379, env='REDIS_PORT')
     auth_port: int = Field(5000, env='AUTH_PORT')
+
 
 auth_config = AuthSettings()
 

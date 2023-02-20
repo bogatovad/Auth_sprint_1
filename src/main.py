@@ -1,28 +1,15 @@
-from flask import Flask, request, jsonify
-from flask_marshmallow import Marshmallow
-from db.postgres import init_db
-from api.v1.views.role import role
-from db.extensions import db, ma, api
+from db.postgres import db, init_db
+from services.application import create_app
 
-from db_models import Role
+app = create_app()
 
 
-app = Flask(__name__)
-app.register_blueprint(role)
-
-
-@app.route('/hello-world')
-def hello_world():
-    return 'Hello, World!'
-
-
-app.config.from_pyfile('./core/config', silent=True)
-init_db(app)
-ma.init_app(app)
-api.init_app(app)
-app.app_context().push()
-db.create_all()
+def main():
+    init_db(app)
+    app.app_context().push()
+    db.create_all()
+    app.run(host='0.0.0.0', port=5555, debug=True)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    main()

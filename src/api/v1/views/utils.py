@@ -6,7 +6,7 @@ def get_or_create(session, model, **kwargs):
         instance = model(**kwargs)
         session.add(instance)
         session.commit()
-        return instance
+    return instance
 
 
 def update_permissions(session, model, role, permissions_list):
@@ -15,7 +15,7 @@ def update_permissions(session, model, role, permissions_list):
         permission = get_or_create(
             session,
             model,
-            endpoint=endpoint,
+            resource=endpoint,
             method=method)
         role.add_permission(permission)
     
