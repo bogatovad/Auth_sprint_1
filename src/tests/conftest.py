@@ -1,18 +1,34 @@
 import pytest
-from main import app
+from services.application import create_app
+from db.postgres import init_db, db
+from random import randint
+from flask_jwt_extended import create_refresh_token, create_access_token
 
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
+@pytest.fixture()
+def app():
+    app = create_app()
+    app.config.update({
+        "TESTING": True,
+    })
+
+    init_db(app)
+    app.app_context().push()
+    db.create_all()
+
+    yield app
 
 
-@pytest.fixture
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+
+
+@pytest.fixture(scope='session')
 def login():
-    return "login"
+    return f"login_{randint(1, 1000)}"
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def password():
     return "password"
 
@@ -29,14 +45,12 @@ def user(login, password, email):
 
 @pytest.fixture
 def access_token(user):
-    # TODO Remove hardcode
-    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3NjgyMjUyOSwianRpIjoiYTFkYjkxOTctNmEwYy00NGU4LWFjMWItMTZmZDY3MDExNWRhIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InNvbWV0aGluZyIsIm5iZiI6MTY3NjgyMjUyOSwiZXhwIjo3NjMyNjQyMjUyOX0.DEQDfGARGbiK5_XbWdAR2AdzRVbyc64gVdYQMbvuEBU"
+    return create_access_token(user["login"])
 
 
 @pytest.fixture
 def refresh_token(user):
-    # TODO Remove hardcode
-    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3NjgyMjUyOSwianRpIjoiYzhkZDM1N2ItM2VkZC00NjUwLWIyZTEtY2I1MWZhNDg0NjI5IiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiJzb21ldGhpbmciLCJuYmYiOjE2NzY4MjI1MjksImV4cCI6MTc1NDU4MjUyOX0.l8BSAF2l4dWuAnEqjghVCIW1ZzPUw6sfdMf1Q0VMt5Y"
+    return create_refresh_token(user['login'])
 
 
 @pytest.fixture
