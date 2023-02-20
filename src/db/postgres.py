@@ -10,5 +10,5 @@ db = SQLAlchemy()
 
 
 def init_db(app: Flask):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://auth:qwerty123@postgres/auth'
+    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://app:123qwe@postgres/auth_database"
     db.init_app(app)
