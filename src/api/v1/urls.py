@@ -10,22 +10,10 @@ def path(resource: str) -> str:
 
 
 urls = [
-    (
-        SignUp, path("signup")
-    ),
-    (
-        Login, path("login")
-    ),
-    (
-        RefreshToken, path("refresh")
-    ),
-    (
-        Logout, path("logout")
-    ),
-    (
-        History, path("history_auth")
-    ),
-    (
-        ChangePersonalData, path("change")
-    ),
+    (SignUp, path("signup")),
+    (Login, path("login")),
+    (RefreshToken, path("refresh")),
+    (Logout, path("logout")),
+    (History, path("history_auth")),
+    (ChangePersonalData, path("change")),
 ]
