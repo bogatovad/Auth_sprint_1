@@ -2,20 +2,13 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import jsonify, make_response
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                get_jwt, get_jwt_identity, jwt_required)
 from flask_restful import Resource, request
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    get_jwt,
-    get_jwt_identity,
-    jwt_required,
-)
 
-from api.v1.arguments import (
-    create_parser_args_change_auth_data,
-    create_parser_args_login,
-    create_parser_args_signup,
-)
+from api.v1.arguments import (create_parser_args_change_auth_data,
+                              create_parser_args_login,
+                              create_parser_args_signup)
 from api.v1.schemas import HistorySchemaOut
 from db.redis_client import redis_client
 from db.storage.device_storage import DeviceStorage
