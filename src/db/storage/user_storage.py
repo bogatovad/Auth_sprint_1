@@ -45,4 +45,3 @@ class PostgresUserStorage(BaseUserStorage):
 
     def get_by_id(self, id):
         return User.query.filter_by(id=id).first()
-

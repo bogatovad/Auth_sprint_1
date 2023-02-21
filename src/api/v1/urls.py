@@ -1,5 +1,4 @@
-from .users import (ChangePersonalData, History, Login, Logout, RefreshToken,
-                    SignUp)
+from .users import ChangePersonalData, History, Login, Logout, RefreshToken, SignUp
 
 API_URL = "/api/v1"
 AUTH_URL = f"{API_URL}/auth"
@@ -10,22 +9,10 @@ def path(resource: str) -> str:
 
 
 urls = [
-    (
-        SignUp, path("signup")
-    ),
-    (
-        Login, path("login")
-    ),
-    (
-        RefreshToken, path("refresh")
-    ),
-    (
-        Logout, path("logout")
-    ),
-    (
-        History, path("history_auth")
-    ),
-    (
-        ChangePersonalData, path("change")
-    ),
+    (SignUp, path("signup")),
+    (Login, path("login")),
+    (RefreshToken, path("refresh")),
+    (Logout, path("logout")),
+    (History, path("history_auth")),
+    (ChangePersonalData, path("change")),
 ]

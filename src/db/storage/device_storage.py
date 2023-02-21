@@ -15,7 +15,9 @@ class DeviceStorage:
         return Device.query.filter_by(name=name, owner=owner).first()
 
     def filter(self, name: str, owner: User):
-        return db.session.execute(db.Query(Device).filter(Device.name == name, Device.owner == owner))
+        return db.session.execute(
+            db.Query(Device).filter(Device.name == name, Device.owner == owner)
+        )
 
     @staticmethod
     def get_or_create(**kwargs):

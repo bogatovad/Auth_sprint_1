@@ -10,10 +10,7 @@ AUTH_URL = "/api/v1/auth"
 
 
 def test_signup_ok(client, user, login):
-    response = client.post(
-        path=f"{AUTH_URL}/signup",
-        data=user
-    )
+    response = client.post(path=f"{AUTH_URL}/signup", data=user)
     assert response.status_code == http.HTTPStatus.CREATED
     result = response.json
     assert result == {"message": f"User '{login}' successfully created"}
@@ -23,10 +20,7 @@ def test_signup_ok(client, user, login):
 
 
 def test_signup_existent_user(client, user):
-    response = client.post(
-        path=f"{AUTH_URL}/signup",
-        data=user
-    )
+    response = client.post(path=f"{AUTH_URL}/signup", data=user)
     assert response.status_code == http.HTTPStatus.CONFLICT
 
 
@@ -69,7 +63,7 @@ def test_login_without_password(client):
     )
 
     assert response.status_code == http.HTTPStatus.BAD_REQUEST
-    assert response.json["message"] == {'password': 'Password required'}
+    assert response.json["message"] == {"password": "Password required"}
 
 
 def test_login_wihout_credentials(client):
@@ -88,7 +82,7 @@ def test_logout_ok(client, auth_access_header):
     )
     assert response.status_code == http.HTTPStatus.OK
     # Проверка, что access токен записался в базу невалидных токенов
-    assert redis_client.db_for_invalid_access.get(get_jwt()['jti']) is not None
+    assert redis_client.db_for_invalid_access.get(get_jwt()["jti"]) is not None
 
 
 def test_logout_without_access_token(client):
@@ -108,7 +102,6 @@ def test_refresh_ok(client, auth_refresh_header):
     result = response.json
     assert "access_token" in result
     assert "refresh_token" in result
-
 
     new_refresh = result["refresh_token"]
     token_in_redis = redis_client.db_for_refresh.get(get_jwt_identity())

@@ -17,6 +17,7 @@ class RoleSchemaOut(Schema):
 
 class ListRoleSchemaOut(Schema):
     """Схема для возвращения устройства пользователя."""
+
     roles = fields.Nested(RoleSchemaOut, many=True)
 
 
