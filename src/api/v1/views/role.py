@@ -20,15 +20,14 @@ def add_role():
     update_permissions(db.session, Permission, new_role, permissions_list)
     db.session.add(new_role)
     db.session.commit()
-    return make_response(RoleSchemaOut().dump(new_role), HTTPStatus.OK)
+    return RoleSchemaOut().dump(new_role), HTTPStatus.CREATED
 
 
 @role.get('/')
 def all_roles():
     """Метод для отображения всех ролей."""
-    return make_response(
-        [RoleSchemaOut().dump(role) for role in Role.query.all()], HTTPStatus.OK
-    )
+    return [RoleSchemaOut().dump(role) for role in Role.query.all()], HTTPStatus.OK
+    
 
 
 @role.put('/<int:role_id>')
@@ -41,7 +40,7 @@ def update_role(role_id: int):
     role.name = role_name
     update_permissions(db.session, Permission, role, permissions_list)
     db.session.commit()
-    return make_response(RoleSchemaOut().dump(role), HTTPStatus.OK)
+    return RoleSchemaOut().dump(role), HTTPStatus.OK
 
 
 @role.delete('/<int:role_id>')
@@ -51,7 +50,7 @@ def remove_role(role_id: int):
     role = Role.query.get_or_404(role_id)
     db.session.delete(role)
     db.session.commit()
-    return make_response(jsonify(message=f'Role {role_id} has been removed!'), HTTPStatus.OK)
+    return jsonify(message=f'Role {role_id} has been removed!'), HTTPStatus.OK
 
 
 @role.post('/<int:role_id>/user/<user_id>')
@@ -61,7 +60,7 @@ def add_user_role(role_id: int, user_id: str):
     user = User.query.get_or_404(user_id)
     user.add_role(role=role)
     db.session.commit()
-    return make_response(UserSchemaOut().dump(user), HTTPStatus.OK)
+    return UserSchemaOut().dump(user), HTTPStatus.OK
 
 
 @role.delete('/<int:role_id>/user/<user_id>')
@@ -73,10 +72,10 @@ def revoke_user_role(role_id: int, user_id: str):
         user.roles.remove(role)
         db.session.commit()
         return make_response(UserSchemaOut().dump(user), HTTPStatus.OK)
-    return make_response(jsonify(message=f'Role {role_id} doesnt set in this user.'), HTTPStatus.BAD_REQUEST)
+    return jsonify(message=f'Role {role_id} doesnt set in this user.'), HTTPStatus.BAD_REQUEST
 
 
 @role.get('/permissions/user/<user_id>')
 def get_user_permissions(user_id):
     user = User.query.get_or_404(user_id)
-    return make_response(ListRoleSchemaOut().dump({'roles': user.roles}), HTTPStatus.OK)
+    return ListRoleSchemaOut().dump({'roles': user.roles}), HTTPStatus.OK
