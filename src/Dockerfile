@@ -1,5 +1,7 @@
 FROM python:3.10.8-slim-bullseye
 
+ENV PYTHONUNBUFFERED 1
+
 RUN pip install --upgrade pip
 
 WORKDIR /auth
@@ -14,4 +16,5 @@ COPY .. .
 RUN chown auth:auth -R /auth
 
 USER auth
-CMD python3 main.py
+
+CMD python3 pywsgi.py

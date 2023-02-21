@@ -31,6 +31,8 @@ class Config(object):
                               f"{auth_config.pg_password}@{auth_config.db_host}/{auth_config.db_name}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    FLASK_HOST = 5000
+
 
 class ProductionConfig(Config):
     DEBUG = False

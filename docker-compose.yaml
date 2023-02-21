@@ -2,6 +2,7 @@ version: '3'
 services:
     auth:
       build: src
+      container_name: auth
       env_file:
         - envs/.env
       depends_on:
@@ -9,15 +10,14 @@ services:
         - postgres_auth
       volumes:
         - ./src:/auth
+        - ./src/migrations:/auth/migrations
       expose:
         - 5000
-      ports:
-        - 5555:5555
 
     redis_auth:
       image: redis:7-alpine
-      ports:
-        - 6379:6379
+      expose:
+        - 6379
 
     postgres_auth:
       image: postgres:13.0-alpine
@@ -27,8 +27,16 @@ services:
         - envs/.env
       expose:
         - 5432
+
+    nginx:
+      image: nginx:latest
+      volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      depends_on:
+        - auth
       ports:
-        - 5432:5432
+        - "80:80"
 
 volumes:
   data_postgres:

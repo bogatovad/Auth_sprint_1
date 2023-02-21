@@ -1,6 +1,7 @@
 from flasgger import Swagger
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
+from flask_migrate import Migrate
 
 from api.v1.urls import urls
 from api.v1.views.role import role
