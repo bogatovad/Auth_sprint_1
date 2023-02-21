@@ -2,12 +2,13 @@ version: '3'
 services:
     auth:
       build: src
+      container_name: auth
       depends_on:
         - redis
         - postgres
       volumes:
         - ./src:/auth
-#        - ./src/migrations:/auth/migrations
+        - ./src/migrations:/auth/migrations
       expose:
         - 5000
 
