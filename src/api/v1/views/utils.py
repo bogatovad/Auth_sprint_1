@@ -15,7 +15,6 @@ def get_or_create(session, model, **kwargs):
 
 def set_permissions(session, model, role, permissions_list):
     for item in permissions_list:
-        #endpoint, method = item[0], item[1]
         permission = get_or_create(
             session,
             model,
