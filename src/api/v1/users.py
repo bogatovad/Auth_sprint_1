@@ -4,7 +4,7 @@ from http import HTTPStatus
 from flask import jsonify, make_response
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt, get_jwt_identity, jwt_required)
-from flask_restful import Resource
+from flask_restful import Resource, request
 
 from api.v1.arguments import (create_parser_args_change_auth_data,
                               create_parser_args_login,
@@ -20,13 +20,28 @@ from services.exceptions import AuthError, DuplicateUserError
 
 class History(Resource):
     """Реализация метода для получения истории авторизаций."""
+    @staticmethod
+    def _parse_args():
+        args = request.args
+        per_page: int = 10
+        if args:
+            page = int(args["page"])
+        else:
+            page = 1
+        return page, per_page
 
     @jwt_required()
     def get(self):
+        page, per_page = self._parse_args()
         identity = get_jwt_identity()
         storage = PostgresUserStorage()
+        history_storage = HistoryAuthStorage()
         user = storage.get_by_id(identity)
-        history = [HistorySchemaOut().dump(item) for item in user.history]
+        history_queryset = history_storage.get_history_user(user.id)
+        paginator = history_queryset.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        history = [HistorySchemaOut().dump(item) for item in paginator]
         return {user.login: history}
 
 
@@ -35,6 +50,7 @@ class ChangePersonalData(Resource):
 
     @jwt_required()
     def post(self):
+        args = create_parser_args_signup()
         identity = get_jwt_identity()
         storage = PostgresUserStorage()
         user = storage.get_by_id(identity)
