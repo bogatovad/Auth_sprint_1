@@ -10,7 +10,7 @@ services:
       expose:
         - 5000
       ports:
-        - '5555:5555'
+        - 5555:5555
 
     redis:
       image: redis:7-alpine

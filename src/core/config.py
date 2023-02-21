@@ -1,17 +1,21 @@
 import datetime
+import os
 
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
 
 class AuthSettings(BaseSettings):
-    db_name: str = os.getenv('DB_NAME', 'database_auth')
-    pg_user: str = os.getenv('POSTGRES_USER', 'app')
-    pg_password: str = os.getenv('POSTGRES_PASSWORD', 'qwerty123') 
-    db_host: str = os.getenv( 'POSTGRES_HOST', 'postgres')
-    db_port: int = os.getenv('DB_PORT', 5432)
-    redis_host: str = os.getenv('REDIS_HOST', 'redis_auth')
-    redis_port: int = os.getenv('REDIS_PORT', 6379)
-    auth_port: int = os.getenv('AUTH_PORT', 5555)
+    db_name: str = Field('auth_database', env='DB_NAME')
+    pg_user: str = Field('app', env='POSTGRES_USER')
+    pg_password: str = Field('qwerty123', env='POSTGRES_PASSWORD') #check envs
+    db_host: str = Field('postgres', env='POSTGRES_HOST')
+    db_port: int = Field(5432, env='DB_PORT')
+    redis_host: str = Field('redis_auth', env='REDIS_HOST')
+    redis_port: int = Field(6379, env='REDIS_PORT')
+    auth_port: int = Field(5000, env='AUTH_PORT')
+
+    class Config:
+          env_file = ".env"
 
 
 auth_config = AuthSettings()
