@@ -1,7 +1,8 @@
+import click
+
 from db.models import Role
 from db.postgres import db, init_db
 from services.application import create_app
-import click
 from services.auth_service import JwtAuth
 from services.exceptions import DuplicateUserError
 

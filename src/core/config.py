@@ -23,7 +23,8 @@ class Config(object):
 
     SECRET_KEY = "YOUR_RANDOM_SECRET_KEY"
 
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{auth_config.pg_user}:{auth_config.pg_password}@{auth_config.db_host}/{auth_config.db_name}"
+    SQLALCHEMY_DATABASE_URI = f"postgresql://{auth_config.pg_user}:" \
+                              f"{auth_config.pg_password}@{auth_config.db_host}/{auth_config.db_name}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 

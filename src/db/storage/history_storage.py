@@ -11,3 +11,7 @@ class HistoryAuthStorage:
         db.session.add(history_auth)
         db.session.commit()
         return history_auth
+
+    @staticmethod
+    def get_history_user(user_id: str):
+        return HistoryAuth.query.filter_by(user_id=user_id)

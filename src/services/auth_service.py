@@ -10,12 +10,12 @@ class BaseAuth(ABC):
     """Базовый класс для аутентефикации пользователя."""
 
     @abstractmethod
-    def signup(self):
+    def signup(self, *args, **kwargs):
         """Метод регистрации пользователя."""
         pass
 
     @abstractmethod
-    def login(self):
+    def login(self, *args, **kwargs):
         """Метод аутентефикации."""
         pass
 
@@ -23,8 +23,9 @@ class BaseAuth(ABC):
 class JwtAuth(BaseAuth):
     """Реализация аутентефикации на jwt-токенах."""
 
-    def signup(self, login: str, password: str, email: str):
+    def signup(self, *args, **kwargs):
         """Реализаия метода регистрации пользователя."""
+        login, password, email = args
         storage = PostgresUserStorage()
         password_checker = PBKDF2StoragePassword()
 
@@ -35,7 +36,8 @@ class JwtAuth(BaseAuth):
             login=login, password=password_checker.create_hash(password), email=email
         )
 
-    def login(self, login: str, password: str) -> User:
+    def login(self, *args, **kwargs) -> User:
+        login, password = args
         storage = PostgresUserStorage()
         password_checker = PBKDF2StoragePassword()
 
