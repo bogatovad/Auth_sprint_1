@@ -1,3 +1,4 @@
+from db.models import Role
 from db.postgres import db, init_db
 from services.application import create_app
 import click
@@ -15,7 +16,9 @@ def create_superuser(login, password, email):
     init_db(app)
     auth_service = JwtAuth()
     try:
+        admin_role = Role.get_or_create(name='superuser')
         user = auth_service.signup(login, password, email)
+        user.add_role(admin_role)
         click.echo(f"User {user} created")
     except DuplicateUserError:
         click.echo(f"User {login} already exists.")

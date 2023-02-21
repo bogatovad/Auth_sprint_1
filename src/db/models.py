@@ -122,3 +122,15 @@ class Role(db.Model):
 
     def add_permission(self, permission):
         self.permissions.append(permission)
+
+
+    @classmethod
+    def get_or_create(cls, **kwargs):
+        instance = db.session.query(cls).filter_by(**kwargs).first()
+        if instance:
+            return instance
+        else:
+            instance = cls(**kwargs)
+            db.session.add(instance)
+            db.session.commit()
+        return instance
