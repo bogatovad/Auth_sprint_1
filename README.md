@@ -7,10 +7,10 @@ https://github.com/bogatovad/Auth_sprint_1
  - [acetone415](https://github.com/acetone415)
 
 
-# Сервис аутентификации и авторизации
+# Сервис аутентификации и авторизации  
 
 
-## Возможности сервиса
+## Возможности сервиса  
 
 - регистрация пользователя;
 - вход пользователя в аккаунт (обмен логина и пароля на пару токенов: JWT-access токен и refresh токен); 
@@ -20,7 +20,7 @@ https://github.com/bogatovad/Auth_sprint_1
 - получение пользователем своей истории входов в аккаунт;
 
 
-## Используемые технологии
+## Используемые технологии   
 
 - Flask
 - PostgreSQL
@@ -29,14 +29,15 @@ https://github.com/bogatovad/Auth_sprint_1
 - Pytest
 - SQLAlchemy
 
-## Запуск
+## Запуск  
+
 Создать и заполнить .env из .env.example в папке `Auth_sprint_1/envs`.
 Из этой папки `Auth_sprint_1` выполнить:
 ```
 make start
 ```
 
-## Запуск тестов
+## Запуск тестов  
 
 Из контейнера flask (`auth_sprint_1_auth_1`) запустить pytest:
 ```
@@ -45,5 +46,14 @@ docker exec -it auth_sprint_1_auth_1 bash
 pytest
 ```
 
-## Документация API
+
+## Создание суперпользователя  
+
+Из контейнера flask (`auth_sprint_1_auth_1`) запустить
+```
+flask --app main.py create-superuser admin pass email
+```
+
+## Документация API  
+
 Доступна по адресу `http://host:port/apidocs`

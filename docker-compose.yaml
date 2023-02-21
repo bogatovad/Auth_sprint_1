@@ -2,9 +2,11 @@ version: '3'
 services:
     auth:
       build: src
+      env_file:
+        - envs/.env
       depends_on:
-        - redis
-        - postgres
+        - redis_auth
+        - postgres_auth
       volumes:
         - ./src:/auth
       expose:
@@ -12,12 +14,12 @@ services:
       ports:
         - 5555:5555
 
-    redis:
+    redis_auth:
       image: redis:7-alpine
       ports:
         - 6379:6379
 
-    postgres:
+    postgres_auth:
       image: postgres:13.0-alpine
       volumes:
         - data_postgres:/var/lib/postgresql/data/

@@ -32,9 +32,7 @@ class JwtAuth(BaseAuth):
             raise DuplicateUserError()
 
         return storage.create(
-            login=login,
-            password=password_checker.create_hash(password),
-            email=email
+            login=login, password=password_checker.create_hash(password), email=email
         )
 
     def login(self, login: str, password: str) -> User:

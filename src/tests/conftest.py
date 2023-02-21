@@ -10,9 +10,11 @@ from services.application import create_app
 @pytest.fixture()
 def app():
     app = create_app()
-    app.config.update({
-        "TESTING": True,
-    })
+    app.config.update(
+        {
+            "TESTING": True,
+        }
+    )
 
     init_db(app)
     app.app_context().push()
@@ -26,12 +28,12 @@ def client(app):
     return app.test_client()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def login():
     return f"login_{randint(1, 1000)}"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def password():
     return "password"
 
@@ -53,7 +55,7 @@ def access_token(user):
 
 @pytest.fixture
 def refresh_token(user):
-    return create_refresh_token(user['login'])
+    return create_refresh_token(user["login"])
 
 
 @pytest.fixture
