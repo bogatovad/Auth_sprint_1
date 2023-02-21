@@ -20,13 +20,8 @@ class PBKDF2StoragePassword(StoragePassword):
 
     @staticmethod
     def _generate_key(password: str, salt: bytes):
-        algorithm: str = 'sha256'
-        return hashlib.pbkdf2_hmac(
-            algorithm,
-            password.encode('utf-8'),
-            salt,
-            100000
-        )
+        algorithm: str = "sha256"
+        return hashlib.pbkdf2_hmac(algorithm, password.encode("utf-8"), salt, 100000)
 
     def create_hash(self, *args, **kwargs):
         password, = args
@@ -44,4 +39,3 @@ class PBKDF2StoragePassword(StoragePassword):
         key_pbkdf2_hmac, salt = self._extract_salt_and_key(password_in_datastage)
         new_key_pbkdf2_hmac = self._generate_key(password, salt)
         return new_key_pbkdf2_hmac == key_pbkdf2_hmac
-

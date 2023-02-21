@@ -2,13 +2,20 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import jsonify, make_response
-from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                get_jwt, get_jwt_identity, jwt_required)
 from flask_restful import Resource, request
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+)
 
-from api.v1.arguments import (create_parser_args_change_auth_data,
-                              create_parser_args_login,
-                              create_parser_args_signup)
+from api.v1.arguments import (
+    create_parser_args_change_auth_data,
+    create_parser_args_login,
+    create_parser_args_signup,
+)
 from api.v1.schemas import HistorySchemaOut
 from db.redis_client import redis_client
 from db.storage.device_storage import DeviceStorage
@@ -63,7 +70,7 @@ class ChangePersonalData(Resource):
         if password is not None:
             user.password = password
 
-        return {'status': 'Your personal data has been changed.'}
+        return {"status": "Your personal data has been changed."}
 
 
 class SignUp(Resource):
@@ -107,7 +114,7 @@ class SignUp(Resource):
         login = args["login"]
         password = args["password"]
         email = args["email"]
-        user_agent = args['user_agent']
+        user_agent = args["user_agent"]
 
         auth_service = JwtAuth()
 
@@ -132,6 +139,7 @@ class Login(Resource):
     Параметры пользователя (логин, пароль, агент) находятся в args.
     Создаются access и refresh токены и возвращаются пользователю.
     """
+
     @staticmethod
     def post():
         """
@@ -158,7 +166,7 @@ class Login(Resource):
 
         login = args["login"]
         password = args["password"]
-        user_agent = args['user_agent']
+        user_agent = args["user_agent"]
 
         auth_service = JwtAuth()
 
@@ -168,7 +176,9 @@ class Login(Resource):
             return {"message": error.message}, HTTPStatus.UNAUTHORIZED
 
         identity = str(user.id)
-        refresh_token, access_token = create_refresh_token(identity), create_access_token(identity)
+        refresh_token, access_token = create_refresh_token(
+            identity
+        ), create_access_token(identity)
 
         history_storage = HistoryAuthStorage()
         device_storage = DeviceStorage()
@@ -184,7 +194,9 @@ class Login(Resource):
             current_device = device_storage.get(name=user_agent, owner=user)
 
         # делаем запись в таблицу history_auth.
-        history_storage.create(user=user, device=current_device, date_auth=datetime.now())
+        history_storage.create(
+            user=user, device=current_device, date_auth=datetime.now()
+        )
 
         # сохраняем refresh токен в редис.
         redis_client.set_user_refresh_token(identity, refresh_token)

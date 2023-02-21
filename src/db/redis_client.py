@@ -1,6 +1,6 @@
 import redis
 
-from core.config import CACHE_REFRESH_TOKEN_EXPIRATION_TIME
+from core.config import CACHE_REFRESH_TOKEN_EXPIRATION_TIME, auth_config
 
 
 class RedisConnector:
@@ -20,4 +20,4 @@ class RedisConnector:
         return self.db_for_invalid_access.get(jti) is not None
 
 
-redis_client = RedisConnector("redis", "6379")
+redis_client = RedisConnector(auth_config.redis_host, auth_config.redis_port)
