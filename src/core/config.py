@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from pydantic import BaseSettings, Field
 
@@ -13,6 +14,9 @@ class AuthSettings(BaseSettings):
     redis_port: int = Field(6379, env="REDIS_PORT")
     auth_port: int = Field(5000, env="AUTH_PORT")
     jwt_secret_key: str = Field("super-secret", env="JWT_SECRET_KEY")
+
+    class Config:
+          env_file = ".env"
 
 
 auth_config = AuthSettings()

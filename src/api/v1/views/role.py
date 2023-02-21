@@ -5,8 +5,8 @@ from flask import Blueprint, jsonify, make_response, request
 from db.models import Permission, Role, User
 from db.postgres import db
 
-from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
-from .utils import update_permissions
+from ..schemas import RoleSchemaOut, UserSchemaOut, ListRoleSchemaOut
+from .utils import set_permissions, return_error
 
 role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
@@ -14,10 +14,13 @@ role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 @role.post("/")
 def add_role():
     """Метод для создания роли."""
-    role_name = request.json["name"]
-    permissions_list = request.json["permissions"]
+    role_name = request.json['name']
+    role = Role.query.filter_by(name=role_name).one_or_none()
+    if role:
+        return_error('role already exists', HTTPStatus.BAD_REQUEST)
+    permissions_list = request.json['permissions']
     new_role = Role(name=role_name)
-    update_permissions(db.session, Permission, new_role, permissions_list)
+    set_permissions(db.session, Permission, new_role, permissions_list)
     db.session.add(new_role)
     db.session.commit()
     return make_response(RoleSchemaOut().dump(new_role), HTTPStatus.OK)
@@ -39,7 +42,7 @@ def update_role(role_id: int):
     permissions_list = request.json["permissions"]
     role.permissions = []
     role.name = role_name
-    update_permissions(db.session, Permission, role, permissions_list)
+    set_permissions(db.session, Permission, role, permissions_list)
     db.session.commit()
     return make_response(RoleSchemaOut().dump(role), HTTPStatus.OK)
 
