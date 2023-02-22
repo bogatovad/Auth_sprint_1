@@ -36,6 +36,7 @@ class PBKDF2StoragePassword(StoragePassword):
 
     def check_password(self, *args, **kwargs):
         password, password_in_datastage = args
-        key_pbkdf2_hmac, salt = self._extract_salt_and_key(password_in_datastage)
+        key_pbkdf2_hmac, salt = self._extract_salt_and_key(
+            password_in_datastage)
         new_key_pbkdf2_hmac = self._generate_key(password, salt)
         return new_key_pbkdf2_hmac == key_pbkdf2_hmac

@@ -2,11 +2,9 @@ import click
 
 from db.models import Role
 from db.postgres import db, init_db
-
 from services.application import create_app
 from services.auth_service import JwtAuth
 from services.exceptions import DuplicateUserError
-
 
 app = create_app()
 
@@ -32,4 +30,3 @@ def create_superuser(login, password, email):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
-

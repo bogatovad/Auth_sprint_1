@@ -5,8 +5,8 @@ from flask import Blueprint, jsonify, make_response, request
 from db.models import Permission, Role, User
 from db.postgres import db
 
-from ..schemas import RoleSchemaOut, UserSchemaOut, ListRoleSchemaOut
-from .utils import set_permissions, return_error
+from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
+from .utils import return_error, set_permissions
 
 role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
@@ -30,7 +30,6 @@ def add_role():
 def all_roles():
     """Метод для отображения всех ролей."""
     return [RoleSchemaOut().dump(role) for role in Role.query.all()], HTTPStatus.OK
-    
 
 
 @role.put("/<int:role_id>")

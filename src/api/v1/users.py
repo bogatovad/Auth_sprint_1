@@ -123,7 +123,8 @@ class SignUp(Resource):
         device_storage = DeviceStorage()
         device_storage.get_or_create(name=user_agent, owner=user)
         return make_response(
-            jsonify(message=f"User '{login}' successfully created"), HTTPStatus.CREATED
+            jsonify(
+                message=f"User '{login}' successfully created"), HTTPStatus.CREATED
         )
 
 

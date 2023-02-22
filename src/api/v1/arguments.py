@@ -19,8 +19,10 @@ def create_parser_args_signup():
     sign_up_parser.add_argument(
         "email", **common_argument, required=True, help="Email required"
     )
-    sign_up_parser.add_argument("first_name", **common_argument, required=False)
-    sign_up_parser.add_argument("User-Agent", dest="user_agent", location="headers")
+    sign_up_parser.add_argument(
+        "first_name", **common_argument, required=False)
+    sign_up_parser.add_argument(
+        "User-Agent", dest="user_agent", location="headers")
     return sign_up_parser.parse_args()
 
 
@@ -33,7 +35,8 @@ def create_parser_args_login():
     login_parser.add_argument(
         "password", **common_argument, required=True, help="Password required"
     )
-    login_parser.add_argument("User-Agent", dest="user_agent", location="headers")
+    login_parser.add_argument(
+        "User-Agent", dest="user_agent", location="headers")
     return login_parser.parse_args()
 
 

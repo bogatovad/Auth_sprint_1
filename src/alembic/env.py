@@ -1,11 +1,11 @@
 from logging.config import fileConfig
-import os
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
+from core.config import auth_config
 from db.models import db
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -21,11 +21,13 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = db.metadata
 section = config.config_ini_section
-config.set_section_option(section, 'DB_NAME', os.getenv('DB_NAME', 'postgres'))
-config.set_section_option(section, 'POSTGRES_USER', os.getenv('POSTGRES_USER', 'app'))
-config.set_section_option(section, 'POSTGRES_PASSWORD', os.getenv('POSTGRES_PASSWORD', '123qwe'))
-config.set_section_option(section, 'DB_HOST', os.getenv('POSTGRES_HOST', 'postgres_auth'))
-config.set_section_option(section, 'DB_PORT', str(os.getenv('DB_PORT', 5432)))
+
+config.set_section_option(section, 'DB_NAME', auth_config.db_name)
+config.set_section_option(section, 'POSTGRES_USER', auth_config.pg_user)
+config.set_section_option(
+    section, 'POSTGRES_PASSWORD', auth_config.pg_password)
+config.set_section_option(section, 'DB_HOST', auth_config.db_host)
+config.set_section_option(section, 'DB_PORT', str(auth_config.db_port))
 
 
 # other values from the config, defined by the needs of env.py,

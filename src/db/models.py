@@ -32,7 +32,6 @@ class User(db.Model):
     # C пользователем связаны его роли.
     roles = db.relationship("Role", secondary="users_roles")
 
-
     def __repr__(self):
         return f"<User {self.login}>"
 
@@ -48,7 +47,8 @@ class Device(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
     name = db.Column(db.String, nullable=False)
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey("users.id"), nullable=True)
 
     # Через устройство мы можем получить историю авторизаций.
     history = db.relationship("HistoryAuth", backref="device", lazy=True)
@@ -64,11 +64,13 @@ class HistoryAuth(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
 
     # С каждой авторизацией связан пользователь.
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey("users.id"), nullable=True)
     date_auth = db.Column(db.DateTime)
 
     # С каждой авторизацией связано устройство с которого она была выполнена.
-    device_id = db.Column(db.Integer, db.ForeignKey("device.id"), nullable=False)
+    device_id = db.Column(db.Integer, db.ForeignKey(
+        "device.id"), nullable=False)
 
 
 class Permission(db.Model):
@@ -122,7 +124,6 @@ class Role(db.Model):
 
     def add_permission(self, permission):
         self.permissions.append(permission)
-
 
     @classmethod
     def get_or_create(cls, **kwargs):

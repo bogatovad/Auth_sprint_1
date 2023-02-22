@@ -1,9 +1,9 @@
-from gevent import monkey
-monkey.patch_all()
-
-from gevent.pywsgi import WSGIServer
 from main import app
 from core.config import config
+from gevent.pywsgi import WSGIServer
+from gevent import monkey
+
+monkey.patch_all()
 
 
 http_server = WSGIServer(('', config.FLASK_HOST), app)

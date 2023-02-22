@@ -1,5 +1,6 @@
-from flask import make_response, jsonify
 from typing import Any
+
+from flask import jsonify, make_response
 from werkzeug.exceptions import abort
 
 
@@ -25,4 +26,3 @@ def set_permissions(session, model, role, permissions_list):
 
 def return_error(text: Any | None, http_code: int):
     return abort(make_response(jsonify({'msg': text}), http_code))
-    
