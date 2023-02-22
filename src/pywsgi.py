@@ -1,7 +1,8 @@
-from main import app
-from core.config import config
-from gevent.pywsgi import WSGIServer
 from gevent import monkey
+from gevent.pywsgi import WSGIServer
+
+from core.config import config
+from main import app
 
 monkey.patch_all()
 
