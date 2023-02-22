@@ -23,7 +23,6 @@ class User(db.Model):
     # Храним хэш пароля - бинарные данные.
     password = db.Column(db.LargeBinary, nullable=False)
     email = db.Column(db.String(120), nullable=False)
-
     # C пользователем связаны его устройства.
     devices = db.relationship("Device", backref="owner", lazy=True)
 
@@ -32,6 +31,7 @@ class User(db.Model):
 
     # C пользователем связаны его роли.
     roles = db.relationship("Role", secondary="users_roles")
+
 
     def __repr__(self):
         return f"<User {self.login}>"
