@@ -17,5 +17,4 @@ RUN chown auth:auth -R /auth
 
 USER auth
 
-#CMD python3 pywsgi.py
-CMD python main.py
+CMD alembic upgrade head && python3 pywsgi.py

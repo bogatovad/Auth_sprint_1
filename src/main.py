@@ -10,10 +10,11 @@ from services.exceptions import DuplicateUserError
 
 app = create_app()
 
-def main():
-    init_db(app)
-    app.app_context().push()
-    db.create_all()
+
+init_db(app)
+app.app_context().push()
+#    app.run(host='0.0.0.0', port=5000)
+
 
 """@app.cli.command("create-superuser")
 @click.argument("login")
@@ -32,6 +33,5 @@ def create_superuser(login, password, email):
 
 
 if __name__ == "__main__":
-    main()
-    #app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
 

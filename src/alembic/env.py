@@ -22,9 +22,9 @@ if config.config_file_name is not None:
 target_metadata = db.metadata
 section = config.config_ini_section
 config.set_section_option(section, 'DB_NAME', os.getenv('DB_NAME', 'postgres'))
-config.set_section_option(section, 'POSTGRES_USER', os.getenv('POSTGRES_USER', 'postgres'))
+config.set_section_option(section, 'POSTGRES_USER', os.getenv('POSTGRES_USER', 'app'))
 config.set_section_option(section, 'POSTGRES_PASSWORD', os.getenv('POSTGRES_PASSWORD', '123qwe'))
-config.set_section_option(section, 'DB_HOST', os.getenv('POSTGRES_HOST', 'postgres'))
+config.set_section_option(section, 'DB_HOST', os.getenv('POSTGRES_HOST', 'postgres_auth'))
 config.set_section_option(section, 'DB_PORT', str(os.getenv('DB_PORT', 5432)))
 
 
