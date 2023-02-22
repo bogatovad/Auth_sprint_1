@@ -11,6 +11,6 @@ Flask-SQLAlchemy==3.0.3
 dependency-injector
 marshmallow-sqlalchemy==0.28.1
 pydantic==1.10.4
-uvicorn==0.18.2
 pytest==6.2.5
 flask-marshmallow==0.14.0
+flask_migrate
