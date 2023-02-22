@@ -10,11 +10,12 @@ from services.exceptions import DuplicateUserError
 
 app = create_app()
 
-init_db(app)
-app.app_context().push()
-db.create_all()
+def main():
+    init_db(app)
+    app.app_context().push()
+    db.create_all()
 
-@app.cli.command("create-superuser")
+"""@app.cli.command("create-superuser")
 @click.argument("login")
 @click.argument("password")
 @click.argument("email")
@@ -27,9 +28,10 @@ def create_superuser(login, password, email):
         user.add_role(admin_role)
         click.echo(f"User {user} created")
     except DuplicateUserError:
-        click.echo(f"User {login} already exists.")
+        click.echo(f"User {login} already exists.")"""
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    main()
+    #app.run(host='0.0.0.0', port=5000, debug=True)
 
