@@ -4,6 +4,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
+from core.config import auth_config
+
 
 def configure_tracer() -> None:
     trace.set_tracer_provider(TracerProvider())
@@ -12,8 +14,8 @@ def configure_tracer() -> None:
     tracer.add_span_processor(
         BatchSpanProcessor(
             JaegerExporter(
-                agent_host_name="jaeger",
-                agent_port=6831,
+                agent_host_name=auth_config.jaeger_host,
+                agent_port=auth_config.jaeger_port,
             )
         )
     )
