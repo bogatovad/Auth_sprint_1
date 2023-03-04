@@ -10,6 +10,7 @@ from api.v1.arguments import (create_parser_args_change_auth_data,
                               create_parser_args_login,
                               create_parser_args_signup)
 from api.v1.schemas import HistorySchemaOut
+from core.limiter import request_limit
 from db.redis_client import redis_client
 from db.storage.device_storage import DeviceStorage
 from db.storage.history_storage import HistoryAuthStorage
@@ -31,6 +32,7 @@ class History(Resource):
         return page, per_page
 
     @jwt_required()
+    @request_limit
     def get(self):
         page, per_page = self._parse_args()
         identity = get_jwt_identity()
@@ -49,6 +51,7 @@ class ChangePersonalData(Resource):
     """Реализация метода по смене учетных данных."""
 
     @jwt_required()
+    @request_limit
     def post(self):
         args = create_parser_args_signup()
         identity = get_jwt_identity()
@@ -70,6 +73,7 @@ class SignUp(Resource):
     """Реализация метода signup."""
 
     @staticmethod
+    @request_limit
     def post():
         """
         Sign up.
@@ -135,6 +139,7 @@ class Login(Resource):
     """
 
     @staticmethod
+    @request_limit
     def post():
         """
         Login
@@ -205,6 +210,7 @@ class Logout(Resource):
     """Реализация метода logout."""
 
     @jwt_required()
+    @request_limit
     def post(self):
         """
         Logout.
@@ -230,6 +236,7 @@ class RefreshToken(Resource):
     """Реализация метода refresh."""
 
     @jwt_required(refresh=True)
+    @request_limit
     def get(self):
         """
         Refreshing tokens.

@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, jsonify, make_response, request
 
+from core.limiter import request_limit
 from db.models import Permission, Role, User
 from db.postgres import db
 
@@ -12,6 +13,7 @@ role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
 
 @role.post("/")
+@request_limit
 def add_role():
     """Метод для создания роли."""
     role_name = request.json['name']
@@ -27,12 +29,14 @@ def add_role():
 
 
 @role.get("/")
+@request_limit
 def all_roles():
     """Метод для отображения всех ролей."""
     return [RoleSchemaOut().dump(role) for role in Role.query.all()], HTTPStatus.OK
 
 
 @role.put("/<int:role_id>")
+@request_limit
 def update_role(role_id: int):
     """Метод для обновления роли."""
     role = Role.query.get_or_404(role_id)
@@ -46,6 +50,7 @@ def update_role(role_id: int):
 
 
 @role.delete("/<int:role_id>")
+@request_limit
 def remove_role(role_id: int):
     """Метод для удаления роли."""
     role_id = request.view_args["role_id"]
@@ -56,6 +61,7 @@ def remove_role(role_id: int):
 
 
 @role.post("/<int:role_id>/user/<user_id>")
+@request_limit
 def add_user_role(role_id: int, user_id: str):
     """Метод для добавления роли пользователю."""
     role = Role.query.get_or_404(role_id)
@@ -66,6 +72,7 @@ def add_user_role(role_id: int, user_id: str):
 
 
 @role.delete("/<int:role_id>/user/<user_id>")
+@request_limit
 def revoke_user_role(role_id: int, user_id: str):
     """Метод для удаления роли у пользователя."""
     role = Role.query.get_or_404(role_id)
@@ -78,6 +85,7 @@ def revoke_user_role(role_id: int, user_id: str):
 
 
 @role.get("/permissions/user/<user_id>")
+@request_limit
 def get_user_permissions(user_id):
     user = User.query.get_or_404(user_id)
     return ListRoleSchemaOut().dump({'roles': user.roles}), HTTPStatus.OK
