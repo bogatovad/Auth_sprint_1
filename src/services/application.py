@@ -4,6 +4,7 @@ from flask_restful import Api
 
 from api.v1.urls import urls
 from api.v1.views.role import role
+from api.v1.views.oauth import oauth
 from core.config import (ACCESS_TOKEN_EXPERATION_TIMEDELTA,
                          REFRESH_TOKEN_EXPIRATION_TIMEDELTA, auth_config)
 
@@ -17,11 +18,13 @@ def create_app():
     app = container.app()
     app.container = container
 
+    app.config['SECRET_KEY'] = "YOUR_RANDOM_SECRET_KEY"
     app.config["JWT_SECRET_KEY"] = auth_config.jwt_secret_key
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_TOKEN_EXPERATION_TIMEDELTA
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = REFRESH_TOKEN_EXPIRATION_TIMEDELTA
 
     app.register_blueprint(role)
+    app.register_blueprint(oauth)
 
     api = Api(app)
 

@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from pydantic import BaseSettings, Field
 
@@ -6,7 +7,7 @@ from pydantic import BaseSettings, Field
 class AuthSettings(BaseSettings):
     db_name: str = Field("auth_database", env="DB_NAME")
     pg_user: str = Field("app", env="POSTGRES_USER")
-    pg_password: str = Field(env="POSTGRES_PASSWORD")
+    pg_password: str = Field("123qwe", env="POSTGRES_PASSWORD")
     db_host: str = Field("postgres_auth", env="POSTGRES_HOST")
     db_port: int = Field(5432, env="DB_PORT")
     redis_host: str = Field("redis_auth", env="REDIS_HOST")

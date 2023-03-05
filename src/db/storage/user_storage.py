@@ -43,5 +43,9 @@ class PostgresUserStorage(BaseUserStorage):
     def change(self):
         pass
 
+    def search(self, **kwargs):
+        return User.query.filter_by(**kwargs).one_or_none()
+
     def get_by_id(self, id):
         return User.query.filter_by(id=id).first()
+

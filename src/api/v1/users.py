@@ -16,6 +16,7 @@ from db.storage.history_storage import HistoryAuthStorage
 from db.storage.user_storage import PostgresUserStorage
 from services.auth_service import JwtAuth
 from services.exceptions import AuthError, DuplicateUserError
+from services.accounts import AccountService
 
 
 class History(Resource):
@@ -169,31 +170,12 @@ class Login(Resource):
         except AuthError as error:
             return {"message": error.message}, HTTPStatus.UNAUTHORIZED
 
-        identity = str(user.id)
-        refresh_token, access_token = create_refresh_token(
-            identity
-        ), create_access_token(identity)
-
-        history_storage = HistoryAuthStorage()
-        device_storage = DeviceStorage()
-        devices_user = list(device_storage.filter(name=user_agent, owner=user))
-
-        if not devices_user:
-            # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
-            # Будет реализовано в следующем спринте.
-
-            # сохраняем новое устройство пользователя.
-            current_device = device_storage.create(name=user_agent, owner=user)
-        else:
-            current_device = device_storage.get(name=user_agent, owner=user)
-
-        # делаем запись в таблицу history_auth.
-        history_storage.create(
-            user=user, device=current_device, date_auth=datetime.now()
-        )
+        user_account = AccountService(user=user)
+        refresh_token, access_token = user_account.get_user_tokens()
+        user_account.update_user_info(user_agent=user_agent)
 
         # сохраняем refresh токен в редис.
-        redis_client.set_user_refresh_token(identity, refresh_token)
+        redis_client.set_user_refresh_token(str(user.id), refresh_token)
 
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),

@@ -1,5 +1,4 @@
 from typing import Any
-
 from flask import jsonify, make_response
 from werkzeug.exceptions import abort
 
@@ -14,7 +13,7 @@ def get_or_create(session, model, **kwargs):
     return instance
 
 
-def set_permissions(session, model, role, permissions_list):
+def set_permissions(session, model, role, permissions_list) -> None:
     for item in permissions_list:
         permission = get_or_create(
             session,

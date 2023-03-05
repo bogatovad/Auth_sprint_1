@@ -26,7 +26,7 @@ config.set_section_option(section, 'DB_NAME', auth_config.db_name)
 config.set_section_option(section, 'POSTGRES_USER', auth_config.pg_user)
 config.set_section_option(
     section, 'POSTGRES_PASSWORD', auth_config.pg_password)
-config.set_section_option(section, 'DB_HOST', auth_config.db_host)
+config.set_section_option(section, 'POSTGRES_HOST', auth_config.db_host)
 config.set_section_option(section, 'DB_PORT', str(auth_config.db_port))
 
 

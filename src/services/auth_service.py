@@ -52,3 +52,13 @@ class JwtAuth(BaseAuth):
             raise AuthError()
 
         return user
+
+
+            
+
+
+
+
+
+        
+        

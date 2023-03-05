@@ -32,6 +32,8 @@ class User(db.Model):
     # C пользователем связаны его роли.
     roles = db.relationship("Role", secondary="users_roles")
 
+    accounts = db.relationship("SocialAccount", backref="user", lazy=True)
+
     def __repr__(self):
         return f"<User {self.login}>"
 
@@ -122,6 +124,9 @@ class Role(db.Model):
 
     users = db.relationship("User", secondary="users_roles")
 
+    def __repr__(self):
+        return f"<Role {self.name}>"
+
     def add_permission(self, permission):
         self.permissions.append(permission)
 
@@ -135,3 +140,26 @@ class Role(db.Model):
             db.session.add(instance)
             db.session.commit()
         return instance
+
+
+class SocialAccount(db.Model):
+    """Модель, описывающая аккаунт пользователя
+    в социальном сервисе."""
+
+    __tablename__ = "social_accounts"
+    __table_args__ = (db.UniqueConstraint('social_id', 'social_name'),)
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        unique=True,
+        nullable=False,
+    )
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
+    social_id = db.Column(db.String, nullable=False)
+    social_name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+
+
+    
+    

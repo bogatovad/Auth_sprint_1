@@ -6,7 +6,7 @@ from db.models import Permission, Role, User
 from db.postgres import db
 
 from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
-from .utils import return_error, set_permissions
+from ..utils import return_error, set_permissions
 
 role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
