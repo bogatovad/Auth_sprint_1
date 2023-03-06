@@ -13,15 +13,15 @@ class OAuthProviderInfo(BaseModel):
 
 
 class OAuthService:
-    def __init__(self, provider_name):
+    def __init__(self, provider_name): 
         self.name = provider_name
-        self.client = oauth_client.create_client(self.name)
-        self.token = self.client.authorize_access_token()
 
     def get_user_info(self):
-        raw_user_info = self.client.token.get("userinfo")
+        client = oauth_client.create_client(self.name)
+        token = client.authorize_access_token()
+        raw_user_info = token.get("userinfo")
         if not raw_user_info:
-            raw_user_info = self.client.userinfo()
+            raw_user_info = client.userinfo()
         if self.name == 'yandex':
             self.user_info = OAuthProviderInfo(
             email=raw_user_info['default_email'],
@@ -33,7 +33,7 @@ class OAuthService:
 
     def create_social_account(self, user: User) -> SocialAccount:
         account = SocialAccount(
-            user=user,
+            user_id=user.id,
             social_id=self.user_info.id,
             social_name=self.name,
             email=self.user_info.email

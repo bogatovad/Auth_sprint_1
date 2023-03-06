@@ -38,7 +38,7 @@ def authorize(provider_name):
         )
         oauth_service.create_social_account(user=user)
     user_account = AccountService(user)
-    refresh_token, access_token = user_account.get_user_tokens()
+    access_token, refresh_token = user_account.get_user_tokens()
     user_account.update_user_info(request.headers.get('user_agent'))
     return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),

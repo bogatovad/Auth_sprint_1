@@ -1,4 +1,7 @@
-from db.extensions import oauth_client
+from flask import Flask
+from authlib.integrations.flask_client import OAuth
+
+oauth_client = OAuth()
 
 oauth_client.register(
     name='yandex',
@@ -12,3 +15,7 @@ oauth_client.register(
     api_base_url='https://oauth.yandex.ru/',
     client_kwargs=None,
 )
+
+
+def init_oauth(app: Flask):
+    oauth_client.init_app(app)
