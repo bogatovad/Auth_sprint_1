@@ -12,7 +12,9 @@ services:
         - ./src:/auth
         - ./src/migrations:/auth/migrations
       expose:
-        - 5000
+        - 5555
+      ports:
+        - 5555:5555
 
     redis_auth:
       image: redis:7-alpine
@@ -28,15 +30,15 @@ services:
       expose:
         - 5432
 
-    nginx:
-      image: nginx:latest
-      volumes:
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      depends_on:
-        - auth
-      ports:
-        - "80:80"
+#    nginx:
+#      image: nginx:latest
+#      volumes:
+#        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#        - ./nginx/conf.d:/etc/nginx/conf.d:ro
+#      depends_on:
+#        - auth
+#      ports:
+#        - "80:80"
 
 volumes:
   data_postgres:

@@ -3,6 +3,8 @@ import uuid
 from sqlalchemy.dialects.postgresql import UUID
 
 from db.postgres import db
+from typing import Optional
+from sqlalchemy import or_
 
 
 class User(db.Model):
@@ -37,6 +39,10 @@ class User(db.Model):
 
     def add_role(self, role):
         self.roles.append(role)
+
+    @classmethod
+    def get_user_by_universal_login(cls, login: Optional[str] = None, email: Optional[str] = None):
+        return cls.query.filter(or_(cls.login == login, cls.email == email)).first()
 
 
 class Device(db.Model):
@@ -135,3 +141,19 @@ class Role(db.Model):
             db.session.add(instance)
             db.session.commit()
         return instance
+
+
+class SocialAccount(db.Model):
+    __tablename__ = 'social_account'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship(User, backref=db.backref('social_accounts', lazy=True))
+
+    social_id = db.Column(db.Text, nullable=False)
+    social_name = db.Column(db.Text, nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('social_id', 'social_name', name='social_pk'),)
+
+    def __repr__(self):
+        return f'<SocialAccount {self.social_name}:{self.user_id}>'

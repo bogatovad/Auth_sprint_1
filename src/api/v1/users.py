@@ -16,6 +16,142 @@ from db.storage.history_storage import HistoryAuthStorage
 from db.storage.user_storage import PostgresUserStorage
 from services.auth_service import JwtAuth
 from services.exceptions import AuthError, DuplicateUserError
+from flask import redirect
+import requests
+from db.models import User
+from db.storage.social_account_storage import SocialAccountStorage
+
+# Есть в authlib
+class SocialServiceRedirect(Resource):
+    """Метод для редиректа."""
+
+    def get(self):
+        client_id = '51567000'
+        redirect_uri = 'http://127.0.0.1:5555/api/v1/auth/vk_logic'
+        url_for_redirect = (
+            f"https://oauth.vk.com/authorize?"
+            f"client_id={client_id}"
+            f"&display=page"
+            f"&redirect_uri={redirect_uri}"
+            f"&scope=friends,notify,photos,wall,email"
+            f"&response_type=code"
+            f"&v=5.131"
+        )
+        return redirect(url_for_redirect, code=302)
+
+
+def generate_pass():
+    import random
+
+    chars = '+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    length = 11
+    password = ''
+    for i in range(length):
+        password += random.choice(chars)
+    return password
+
+
+def signup(auth_service, login, email, user_agent):
+    # делаем регистрацию пользователя если его нет.
+    password = generate_pass()
+
+    try:
+        user = auth_service.signup(login, password, email)
+    except DuplicateUserError as error:
+        return {"message": error.message}, HTTPStatus.CONFLICT
+
+    # сохранили устройство при регистрации пользователя
+    # если в последующие разы вход будет осуществлен через другое устройство
+    # то отсылаем уведомление.
+
+    device_storage = DeviceStorage()
+    device_storage.get_or_create(name=user_agent, owner=user)
+
+    return user
+
+
+def save_history_auth(user_agent, user_storage):
+    history_storage = HistoryAuthStorage()
+    device_storage = DeviceStorage()
+    devices_user = list(device_storage.filter(name=user_agent, owner=user_storage))
+
+    if not devices_user:
+        # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
+        # Будет реализовано в следующем спринте.
+
+        # сохраняем новое устройство пользователя.
+        current_device = device_storage.create(name=user_agent, owner=user_storage)
+    else:
+        current_device = device_storage.get(name=user_agent, owner=user_storage)
+
+    # делаем запись в таблицу history_auth.
+    history_storage.create(
+        user=user_storage, device=current_device, date_auth=datetime.now()
+    )
+
+
+def create_tokens(user):
+    # Если пользователь тот, то выдаем токены.
+    identity = str(user.id)
+    refresh_token, access_token = create_refresh_token(identity), create_access_token(identity)
+
+    # сохраняем refresh токен в редис.
+    redis_client.set_user_refresh_token(identity, refresh_token)
+    return refresh_token, access_token
+
+
+class SocialService(Resource):
+    def get(self):
+        args = request.args
+        code = args.get('code')
+        client_secret = 'K56kDbZyl7dPFJxU4Evx'
+        client_id = '51567000'
+        redirect_uri = 'http://127.0.0.1:5555/api/v1/auth/vk_logic'
+        access_token_url = (
+            f"https://oauth.vk.com/access_token?"
+            f"client_id={client_id}"
+            f"&client_secret={client_secret}"
+            f"&redirect_uri={redirect_uri}"
+            f"&code={code}"
+        )
+        response = requests.get(access_token_url).json()
+        access_token = response.get('access_token')
+        user_id = response.get('user_id')
+        email = response.get('email')
+
+        user_agent = request.headers.get('User-Agent')
+        user_storage = User.get_user_by_universal_login(email=email)
+        auth_service = JwtAuth()
+        social_account_storage = SocialAccountStorage()
+
+        login = email
+
+        # Если такого пользователя нет - регистрируем его.
+        if user_storage is None:
+            user = signup(auth_service, login, email, user_agent)
+
+            # Далее нужно сделать запись в SocialService.
+            social_account_storage.create(
+                user=user,
+                social_id=user_id,
+                social_name='vk'
+            )
+
+            user_storage = user
+
+        # Если пользователь есть, то проверим есть ли аккаунт связанный с таким social_id
+        account = social_account_storage.get_account(social_id=str(user_id), social_name='vk')
+
+        # Если найден аккаунт, то проверим тот ли пользователь привязан к нему
+        if account.user == user_storage:
+
+            refresh_token, access_token = create_tokens()
+            save_history_auth(user_agent, user_storage)
+
+            return make_response(
+                jsonify(access_token=access_token, refresh_token=refresh_token),
+                HTTPStatus.OK,
+            )
 
 
 class History(Resource):
@@ -169,31 +305,8 @@ class Login(Resource):
         except AuthError as error:
             return {"message": error.message}, HTTPStatus.UNAUTHORIZED
 
-        identity = str(user.id)
-        refresh_token, access_token = create_refresh_token(
-            identity
-        ), create_access_token(identity)
-
-        history_storage = HistoryAuthStorage()
-        device_storage = DeviceStorage()
-        devices_user = list(device_storage.filter(name=user_agent, owner=user))
-
-        if not devices_user:
-            # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
-            # Будет реализовано в следующем спринте.
-
-            # сохраняем новое устройство пользователя.
-            current_device = device_storage.create(name=user_agent, owner=user)
-        else:
-            current_device = device_storage.get(name=user_agent, owner=user)
-
-        # делаем запись в таблицу history_auth.
-        history_storage.create(
-            user=user, device=current_device, date_auth=datetime.now()
-        )
-
-        # сохраняем refresh токен в редис.
-        redis_client.set_user_refresh_token(identity, refresh_token)
+        refresh_token, access_token = create_tokens()
+        save_history_auth(user_agent, user)
 
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),
