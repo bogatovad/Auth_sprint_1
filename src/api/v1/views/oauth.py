@@ -2,11 +2,14 @@ from http import HTTPStatus
 import requests
 
 from flask import Blueprint, jsonify, make_response, url_for, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from authlib.integrations.flask_client import OAuth
 
+from db.models import SocialAccount
 from db.storage.user_storage import PostgresUserStorage
 from core.oauth import oauth_client
 from services.accounts import AccountService
+from services.exceptions import SocialAccountError
 from services.oauth_service import OAuthService
 
 
@@ -45,3 +48,14 @@ def authorize(provider_name):
             HTTPStatus.OK,
         )
 
+
+@oauth.delete('remove/<string:social_account>')
+@jwt_required()
+def remove(social_account):
+    user_id = get_jwt_identity()
+    oauth_service = OAuthService(social_account)
+    try:
+        oauth_service.remove(user_id)
+    except SocialAccountError as error:
+       return {"message": error.message}, HTTPStatus.BAD_REQUEST
+    return jsonify(message=f'Accont {social_account} has been removed!'), HTTPStatus.OK

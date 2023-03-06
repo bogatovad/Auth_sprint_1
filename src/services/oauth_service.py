@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from db.postgres import db
 from db.models import SocialAccount, User
 from core.oauth import oauth_client
+from services.exceptions import SocialAccountError
 
 
 class OAuthProviderInfo(BaseModel):
@@ -44,3 +45,10 @@ class OAuthService:
 
     def get_social_account(self):
         return SocialAccount.query.filter_by(social_id=self.user_info.id, social_name=self.name).one_or_none()
+    
+    def remove(self, user_id):
+        account = SocialAccount.query.filter_by(user_id=user_id, social_name=self.name).first()
+        if not account:
+            raise SocialAccountError
+        db.session.delete(account)
+        db.session.commit()

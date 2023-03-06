@@ -12,3 +12,11 @@ class DuplicateUserError(Exception):
     def __init__(self, message="User with such login already exist."):
         self.message = message
         super().__init__(self.message)
+
+
+class SocialAccountError(Exception):
+    """Исключение, поднимающеся при повторной попытке открепить социальный аккаунт ."""
+
+    def __init__(self, message="Social account doesnt exist."):
+        self.message = message
+        super().__init__(self.message)
