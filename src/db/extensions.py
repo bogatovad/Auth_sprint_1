@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_restful import Api

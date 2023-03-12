@@ -1,5 +1,6 @@
-from .users import (ChangePersonalData, History, Login, Logout, RefreshToken,
-                    SignUp)
+from __future__ import annotations
+
+from .users import ChangePersonalData, History, Login, Logout, RefreshToken, SignUp
 
 API_URL = "/api/v1"
 AUTH_URL = f"{API_URL}/auth"

@@ -1,6 +1,8 @@
+from __future__ import annotations
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from commands.register_commands import Command
+from core.oauth import init_oauth
 from db.postgres import init_db
 from services.application import create_app
 from flask import request
@@ -8,6 +10,7 @@ from tracer import configure_tracer
 
 
 app = create_app()
+app.secret_key = "super secret key"
 
 
 @app.before_request
@@ -19,10 +22,10 @@ def before_request():
 
 configure_tracer()
 FlaskInstrumentor().instrument_app(app)
-
 command = Command(app)
 command.register_command()
 init_db(app)
+init_oauth(app)
 app.app_context().push()
 
 

@@ -1,4 +1,7 @@
-from abc import ABC, abstractmethod
+from __future__ import annotations
+
+from abc import ABC
+from abc import abstractmethod
 
 from db.crypto_pass import PBKDF2StoragePassword
 from db.models import User
@@ -33,7 +36,9 @@ class JwtAuth(BaseAuth):
             raise DuplicateUserError()
 
         return storage.create(
-            login=login, password=password_checker.create_hash(password), email=email
+            login=login,
+            password=password_checker.create_hash(password),
+            email=email,
         )
 
     def login(self, *args, **kwargs) -> User:

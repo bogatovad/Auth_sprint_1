@@ -1,6 +1,7 @@
-import redis
+from __future__ import annotations
 
-from core.config import CACHE_REFRESH_TOKEN_EXPIRATION_TIME, auth_config
+import redis
+from core.config import auth_config, CACHE_REFRESH_TOKEN_EXPIRATION_TIME
 
 
 class RedisConnector:
@@ -11,7 +12,9 @@ class RedisConnector:
 
     def set_user_refresh_token(self, user_id: str, refresh_token: str):
         self.db_for_refresh.set(
-            user_id, refresh_token, ex=CACHE_REFRESH_TOKEN_EXPIRATION_TIME
+            user_id,
+            refresh_token,
+            ex=CACHE_REFRESH_TOKEN_EXPIRATION_TIME,
         )
 
     def set_user_invalid_access_token(self, user_id: str, jti: str):

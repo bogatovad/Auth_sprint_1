@@ -1,10 +1,12 @@
-from logging.config import fileConfig
+from __future__ import annotations
 
-from sqlalchemy import engine_from_config, pool
+from logging.config import fileConfig
 
 from alembic import context
 from core.config import auth_config
 from db.models import db
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,12 +24,15 @@ if config.config_file_name is not None:
 target_metadata = db.metadata
 section = config.config_ini_section
 
-config.set_section_option(section, 'DB_NAME', auth_config.db_name)
-config.set_section_option(section, 'POSTGRES_USER', auth_config.pg_user)
+config.set_section_option(section, "DB_NAME", auth_config.db_name)
+config.set_section_option(section, "POSTGRES_USER", auth_config.pg_user)
 config.set_section_option(
-    section, 'POSTGRES_PASSWORD', auth_config.pg_password)
-config.set_section_option(section, 'DB_HOST', auth_config.db_host)
-config.set_section_option(section, 'DB_PORT', str(auth_config.db_port))
+    section,
+    "POSTGRES_PASSWORD",
+    auth_config.pg_password,
+)
+config.set_section_option(section, "DB_HOST", auth_config.db_host)
+config.set_section_option(section, "DB_PORT", str(auth_config.db_port))
 
 
 # other values from the config, defined by the needs of env.py,
@@ -75,7 +80,8 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
         )
 
         with context.begin_transaction():
