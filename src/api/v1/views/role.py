@@ -7,10 +7,12 @@ from core.breaker import breaker, CustomCircuitBreakerError, handle_breaker_erro
 from core.limiter import request_limit
 from db.models import Permission, Role, User
 from db.postgres import db
+from db.redis_client import redis_client
 from flask import Blueprint, jsonify, make_response, request
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 
 from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
-from .utils import return_error, set_permissions
+from .utils import return_error, set_permissions, admin_only, get_user_roles
 
 role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
@@ -19,6 +21,7 @@ role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 @breaker
 @handle_breaker_errors
 @role.post("/")
+@admin_only()
 def add_role():
     """Метод для создания роли."""
     role_name = request.json["name"]
@@ -37,6 +40,7 @@ def add_role():
 @breaker
 @handle_breaker_errors
 @role.get("/")
+@admin_only()
 def all_roles():
     """Метод для отображения всех ролей."""
     return [RoleSchemaOut().dump(role) for role in Role.query.all()], HTTPStatus.OK
@@ -46,6 +50,7 @@ def all_roles():
 @breaker
 @handle_breaker_errors
 @role.put("/<int:role_id>")
+@admin_only()
 def update_role(role_id: int):
     """Метод для обновления роли."""
     role = Role.query.get_or_404(role_id)
@@ -62,6 +67,7 @@ def update_role(role_id: int):
 @breaker
 @handle_breaker_errors
 @role.delete("/<int:role_id>")
+@admin_only()
 def remove_role(role_id: int):
     """Метод для удаления роли."""
     role_id = request.view_args["role_id"]
@@ -76,6 +82,7 @@ def remove_role(role_id: int):
 @breaker
 @handle_breaker_errors
 @role.post("/<int:role_id>/user/<user_id>")
+@admin_only()
 def add_user_role(role_id: int, user_id: str):
     """Метод для добавления роли пользователю."""
     role = Role.query.get_or_404(role_id)
@@ -90,6 +97,7 @@ def add_user_role(role_id: int, user_id: str):
 @breaker
 @handle_breaker_errors
 @role.delete("/<int:role_id>/user/<user_id>")
+@admin_only()
 def revoke_user_role(role_id: int, user_id: str):
     """Метод для удаления роли у пользователя."""
     role = Role.query.get_or_404(role_id)
@@ -108,6 +116,20 @@ def revoke_user_role(role_id: int, user_id: str):
 @breaker
 @handle_breaker_errors
 @role.get("/permissions/user/<user_id>")
+@admin_only()
 def get_user_permissions(user_id):
     user = User.query.get_or_404(user_id)
     return ListRoleSchemaOut().dump({"roles": user.roles}), HTTPStatus.OK
+
+
+@request_limit
+@role.get("/user/roles")
+@jwt_required()
+def get_user_roles():
+    jti = get_jwt()["jti"]
+    token_valid = redis_client.check_if_access_token_is_invalid(jti)
+    if not token_valid:
+        return_error('Invalid token', HTTPStatus.FORBIDDEN)
+    user_id = get_jwt_identity()
+    roles_list = get_user_roles(user_id)
+    return roles_list, HTTPStatus.OK

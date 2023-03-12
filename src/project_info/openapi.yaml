@@ -1,0 +1,420 @@
+swagger: "2.0."
+info:
+  title: 'Auth API'
+  version: '1.0'
+  description: |
+    запросы к API начинаются с `/api/v1/`
+    # Описание
+    Auth API для сервиса movies реализует регистрацию и аутентификацию пользователей, в том числе через социальные сервисы Yandex и Vkontakte.
+    Пользователь может посмотреть историю своих входов с различных устройств, изменить учетные данные, открепить аккаунт в соцсети от личного кабинета.
+    Администратор может создавать и удалять ролт, назначать роли пользователям.
+    # Регистрация и аутентификация пользователей
+    1. Пользователь регистрируется на `/auth/signup/`, вводя login, email и пароль 
+    2. Пользователь вводит свои учетные данные на `/auth/login/ (login и password ) и получает access token и refresh token.
+    3. Если access токен истек, обновить его множно на `/auth/refresh/`
+    4. Вывести историю входов пользователь может на `/users/history_auth/` при наличии валидного access токена
+    
+    # Роли
+    - Anonimous — может просматривать список фильмов, информацию о жанрах и персонах, пользоваться поиском. Не может просматривать детальное описания фильмов.
+    - User — может просматривать список фильмов, информацию о жанрах и персонах, пользоваться поиском, изменять учетные данные, просматривать историю посещений. Не может просматривать детальное описания фильмов.
+    - Subscriber - права такие же, как у роли User, но может просматривать детальную информацию о фильмах.
+    - Admin — может создавать, изменять и удалять роли пользователей, назначать их пользователям и отзывать.
+
+    [![Схема взаимодействия сервисов](https://i121.fastpic.org/thumb/2023/0312/10/_1f19d284737f62c09fd2062031c8f410.jpeg)](https://fastpic.org/view/121/2023/0312/_1f19d284737f62c09fd2062031c8f410.jpg.html)
+
+    1. К защищенному эндпойнту Movies Async API приходит запрос от пользователя
+    2. Если в запросе от пользователя нет заголовка Authorization с aссess токеном, пользователь считается анонимным (Anonimous).
+    3. При наличии токена в заголовке сервис Movies Async API делает get запрос к Auth API на `role/user/roles/` с пришедшим токеном в заголовке Authorization.
+    4. Auth API проверяет access token в Redis среди отозванных токенов, а так же проверяет валидность токена.
+    5. Если токен валиден, сервис Movies Async API получает список ролей пользователя и проверяет доступ к запрашиваемому эндпойнту для данной роли
+    6. Если токен невалиден, доступ пользователю запрещен.
+    7. Определение того, какие роли имеют доступ к тем или иным эндпойнтам лежит на сервисе Movies Async API.
+
+
+servers:
+  - url: /api/v1/
+
+tags:
+  - name: OAuth
+    description: Aутентификация через OAuth провайдера
+  - name: Auth
+    description: Регистрация и аутентификация
+  - name: Roles
+    description: Роли  
+
+
+paths:
+
+  /api/v1/oauth/login/{provider_name}:
+    get:
+      tags:
+        - OAuth
+      description: Вход c помощью OAuth. Переход на страницу авторизации
+      parameters:
+          - in: path
+            name: provider_name
+            required: True
+            description: Имя провайдера 
+            schema:
+              type: string
+              example: 'yandex'
+      responses:
+        302:
+          description: 'Перейдите для авторизации'
+
+  /api/v1/oauth/authorize/{provider_name}:
+    get:
+      tags:
+        - OAuth
+      description: Логин или регистрация c помощью OAuth по коду авторизации
+      parameters:
+          - in: path
+            name: provider_name
+            required: True
+            description: Имя провайдера
+            schema:
+              type: string
+              example: 'yandex'
+      responses:
+        200:
+          description: Пара токенов access token и refresh token
+        400:
+          description: Код авторизации отсутствует или не валиден
+
+  /api/v1/oauth/remove/{provider_name}:
+    delete:
+      tags:
+        - OAuth
+      description: Открепление социального аккаунта от личного кабинета пользователя
+      parameters:
+        - in: header
+          name: Authorization
+          description: Authorization token
+          schema:
+            type: str
+            example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3ODQ2MDU2MSwianRpIjoiN2NkZTkxZDctYTIyMS00NjI4LTllYjMtOGU2YmJhMjYyMTBlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjVhOTdhMzRmLTkzNmUtNDZlMC1hYmVkLTc0OWJlMWU4ZGE3NiIsIm5iZiI6MTY3ODQ2MDU2MSwiZXhwIjo3NjMyODA2MDU2MX0.gCi5BHc2yOwUwc8noD7VFypu4sV4ODzdTS3WcT8ujhA
+          required: True
+          - in: path
+            name: provider_name
+            required: True
+            description: Название социальной сети, аккаунт в которой открепляется от личного кабинета
+            schema:
+              type: string
+              example: 'yandex'
+      responses:
+        200:
+          description: Аккаунт откреплен от личного кабинета
+        400:
+          description: Аккаунт не существует или не привязан к личному кабинету
+        401:
+          description: Требуется авторизация
+
+  /api/v1/role:
+    get:
+      tags:
+        - Roles
+      description: |
+        Список ролей
+      responses:
+        200:
+          description: Список ролей
+
+    post:
+      tags:
+        - Roles
+      description: |
+        Создать Роль 
+        Права доступа: Admin
+      parameters:
+        - in: body
+          name: body
+          required:
+            - name
+            - permissions
+          schema:
+            id: Role
+            properties:
+              name:
+                type: string
+                example: 'user'
+              permissions:
+                type: array
+                example: null
+                #item: 
+                #  $ref: '#/components/schemas/Permissions'
+      responses:
+        201:
+          description: Роль создана
+          content:
+            application/json:
+              schema: 
+                $sref: '#/definitions/Role'
+        400:
+          description: Неверные параметры запроса
+        401:
+          description: Требуется авторизация
+        403:
+          description: Доступ запрещён
+
+  /api/v1/role/{role_id}:
+    put:
+      tags:
+        - Roles
+      description: |
+        Изменить Роль 
+        Права доступа: Admin
+      parameters:
+          - in: path
+            name: role_id
+            required: True
+            description: 
+            schema:
+              type: int
+              example: 1
+          - in: body
+            name: body
+            content:
+              application/json:
+                schema:
+                id: Role
+                properties:
+                  name:
+                    type: string
+                  permissions:
+                    type: array
+                    #item: 
+                    #  $ref: '#/components/schemas/Permissions'
+      responses:
+        200:
+          description: Роль изменена
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Role'
+        401:
+          description: Требуется авторизация
+        403:
+          description: Доступ запрещён
+        404:
+          description: Роль не найдена
+
+    delete:
+      tags:
+        - Roles
+      description: |
+        Удалить Роль 
+        Права доступа: Admin
+      parameters:
+          - in: path
+            name: role_id
+            required: True
+            description: 
+            schema:
+              type: int
+              example: 1
+      responses:
+        200:
+          description: Роль удалена
+        401:
+          description: Требуется авторизация
+        403:
+          description: Доступ запрещён
+        404:
+          description: Роль не найдена
+
+  /api/v1/role/{role_id}/user/{user_id}:
+    post:
+      tags:
+        - Roles
+      description: |
+        Добавить роль пользователю
+        Права доступа: Admin
+      parameters:
+        - in: path
+          name: role_id
+          required: True
+          description: 
+          schema:
+            type: int
+            example: 1
+        - in: path
+          name: user_id
+          required: True
+          description: uuid
+          schema:
+            type: str
+            example: 'baa3a43e-be84-11ed-afa1-0242ac120002'
+      responses:
+        200:
+          description: Роль добавлена
+        401:
+          description: Требуется авторизация
+        403:
+            description: Доступ запрещён
+        404:
+          description: 
+
+    delete:
+      tags:
+        - Roles
+      description: |
+        Отозвать роль у пользователя
+        Права доступа: Admin
+      parameters:
+        - in: path
+          name: role_id
+          required: True
+          description: 
+          schema:
+            type: int
+            example: 1
+          name: user_id
+          required: True
+          description: uuid
+          schema:
+            type: str
+            example: 'baa3a43e-be84-11ed-afa1-0242ac120002'
+      responses:
+        200:
+          description: Роль отозвана
+        400:
+          description: Роль не назначена этому пользователю
+        401:
+          description: Требуется авторизация
+        403:
+            description: Доступ запрещён
+
+  /api/v1/role/user/roles:
+    get:
+      tags:
+        - Roles
+      description:
+      parameters:
+        - in: header
+          name: Authorization
+          description: Authorization token
+          schema:
+            type: str
+            example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3ODQ2MDU2MSwianRpIjoiN2NkZTkxZDctYTIyMS00NjI4LTllYjMtOGU2YmJhMjYyMTBlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjVhOTdhMzRmLTkzNmUtNDZlMC1hYmVkLTc0OWJlMWU4ZGE3NiIsIm5iZiI6MTY3ODQ2MDU2MSwiZXhwIjo3NjMyODA2MDU2MX0.gCi5BHc2yOwUwc8noD7VFypu4sV4ODzdTS3WcT8ujhA
+          required: True
+      responses:
+        200:
+          description: Список ролей пользователя
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Roles'
+          example: ['user', 'subscriber']
+        401:
+          description: Требуется авторизация
+      security:
+      - bearerAuth: [ ]
+
+  /api/v1/auth/history_auth:
+    get:
+      tags:
+        - Auth
+      description: |
+        История посещений пользователя
+        Права доступа: User
+      parameters:
+        - in: header
+          name: Authorization
+          description: Authorization token
+          schema:
+            type: str
+            example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3ODQ2MDU2MSwianRpIjoiN2NkZTkxZDctYTIyMS00NjI4LTllYjMtOGU2YmJhMjYyMTBlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjVhOTdhMzRmLTkzNmUtNDZlMC1hYmVkLTc0OWJlMWU4ZGE3NiIsIm5iZiI6MTY3ODQ2MDU2MSwiZXhwIjo3NjMyODA2MDU2MX0.gCi5BHc2yOwUwc8noD7VFypu4sV4ODzdTS3WcT8ujhA
+          required: True
+      responses:
+        200:
+          description: Список входов пользователя 
+        401:
+          description: Требуется авторизация
+        403:
+          description: Доступ запрещён
+      security:
+      - bearerAuth: [ ]
+
+  /api/v1/auth/change:
+    post:
+      tags:
+        - Auth
+      description: |
+        Изменение учетных данных
+        Права доступа: User
+      parameters:
+        - in: header
+          name: Authorization
+          description: Authorization token
+          schema:
+            type: str
+            example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY3ODQ2MDU2MSwianRpIjoiN2NkZTkxZDctYTIyMS00NjI4LTllYjMtOGU2YmJhMjYyMTBlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjVhOTdhMzRmLTkzNmUtNDZlMC1hYmVkLTc0OWJlMWU4ZGE3NiIsIm5iZiI6MTY3ODQ2MDU2MSwiZXhwIjo3NjMyODA2MDU2MX0.gCi5BHc2yOwUwc8noD7VFypu4sV4ODzdTS3WcT8ujhA
+          required: True
+        - in: body
+          name: login
+          description: Логин
+          schema:
+            type: str
+            example: Vasya
+        - in: body
+          name: password
+          description: Пароль
+          schema:
+            type: str
+            example: qwerty123
+      responses:
+        200:
+          description: Данные были изменены
+        401:
+          description: Требуется авторизация
+        403:
+          description: Доступ запрещён
+      security:
+      - bearerAuth: [ ]
+ 
+
+components:
+  schemas:
+
+    Roles:
+      title: Список ролей пользователя
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            type: string
+
+    securitySchemes:
+      bearerAuth: 
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+
+    security:
+      - bearerAuth: [ ]
+    
+
+
+
+
+        
+
+
+      
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+    
+
