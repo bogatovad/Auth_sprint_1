@@ -9,7 +9,7 @@ class CustomCircuitBreakerError(CircuitBreakerError):
 breaker = CircuitBreaker(fail_max=3, reset_timeout=30)
 
 
-def handle_errors(func):
+def handle_breaker_errors(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
