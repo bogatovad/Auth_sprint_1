@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from flask import jsonify
-from flask import make_response
+from flask import jsonify, make_response
 from werkzeug.exceptions import abort
 
 

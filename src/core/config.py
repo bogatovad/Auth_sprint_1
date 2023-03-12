@@ -15,6 +15,9 @@ class AuthSettings(BaseSettings):
     redis_port: int = Field(6379, env="REDIS_PORT")
     auth_port: int = Field(5000, env="AUTH_PORT")
     jwt_secret_key: str = Field("super-secret", env="JWT_SECRET_KEY")
+    jaeger_host: str = Field("jaeger", env="JAEGER_HOST")
+    jaeger_port: int = Field(6831, env="JAEGER_PORT")
+
 
     class Config:
         env_file = "envs/.env"

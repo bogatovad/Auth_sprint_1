@@ -25,6 +25,7 @@ class User(db.Model):
     # Храним хэш пароля - бинарные данные.
     password = db.Column(db.LargeBinary, nullable=False)
     email = db.Column(db.String(120), nullable=False)
+    
     # C пользователем связаны его устройства.
     devices = db.relationship("Device", backref="owner", lazy=True)
 

@@ -6,16 +6,9 @@ from core.config import auth_config, CACHE_REFRESH_TOKEN_EXPIRATION_TIME
 
 class RedisConnector:
     def __init__(self, redis_host, redis_port):
-        self.db_for_refresh = redis.Redis(
-            host=redis_host,
-            port=redis_port,
-            db=0,
-        )
-        self.db_for_invalid_access = redis.Redis(
-            host=redis_host,
-            port=redis_port,
-            db=1,
-        )
+        self.db_for_refresh = redis.Redis(host=redis_host, port=redis_port, db=0)
+        self.db_for_invalid_access = redis.Redis(host=redis_host, port=redis_port, db=1)
+        self.db_for_request_limit = redis.Redis(host=redis_host, port=redis_port, db=2)
 
     def set_user_refresh_token(self, user_id: str, refresh_token: str):
         self.db_for_refresh.set(

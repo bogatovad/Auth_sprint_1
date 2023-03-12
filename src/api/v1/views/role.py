@@ -1,25 +1,20 @@
 from __future__ import annotations
 
 from http import HTTPStatus
+from flask import Blueprint, jsonify, make_response, request
 
-from db.models import Permission
-from db.models import Role
-from db.models import User
+from core.limiter import request_limit
+from db.models import Permission, Role, User
 from db.postgres import db
-from flask import Blueprint
-from flask import jsonify
-from flask import make_response
-from flask import request
+from flask import Blueprint, jsonify, make_response, request
 
-from ..schemas import ListRoleSchemaOut
-from ..schemas import RoleSchemaOut
-from ..schemas import UserSchemaOut
-from .utils import return_error
-from .utils import set_permissions
+from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
+from .utils import return_error, set_permissions
 
 role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
 
+@request_limit
 @role.post("/")
 def add_role():
     """Метод для создания роли."""
@@ -35,12 +30,14 @@ def add_role():
     return RoleSchemaOut().dump(new_role), HTTPStatus.CREATED
 
 
+@request_limit
 @role.get("/")
 def all_roles():
     """Метод для отображения всех ролей."""
     return [RoleSchemaOut().dump(role) for role in Role.query.all()], HTTPStatus.OK
 
 
+@request_limit
 @role.put("/<int:role_id>")
 def update_role(role_id: int):
     """Метод для обновления роли."""
@@ -54,6 +51,7 @@ def update_role(role_id: int):
     return RoleSchemaOut().dump(role), HTTPStatus.OK
 
 
+@request_limit
 @role.delete("/<int:role_id>")
 def remove_role(role_id: int):
     """Метод для удаления роли."""
@@ -64,6 +62,7 @@ def remove_role(role_id: int):
     return jsonify(message=f"Role {role_id} has been removed!"), HTTPStatus.OK
 
 
+@request_limit
 @role.post("/<int:role_id>/user/<user_id>")
 def add_user_role(role_id: int, user_id: str):
     """Метод для добавления роли пользователю."""
@@ -74,6 +73,7 @@ def add_user_role(role_id: int, user_id: str):
     return UserSchemaOut().dump(user), HTTPStatus.OK
 
 
+@request_limit
 @role.delete("/<int:role_id>/user/<user_id>")
 def revoke_user_role(role_id: int, user_id: str):
     """Метод для удаления роли у пользователя."""
@@ -89,6 +89,7 @@ def revoke_user_role(role_id: int, user_id: str):
     )
 
 
+@request_limit
 @role.get("/permissions/user/<user_id>")
 def get_user_permissions(user_id):
     user = User.query.get_or_404(user_id)
