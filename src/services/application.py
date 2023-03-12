@@ -1,11 +1,12 @@
+from __future__ import annotations
+
+from api.v1.urls import urls
+from api.v1.views.oauth import oauth
+from api.v1.views.role import role
+from core.config import ACCESS_TOKEN_EXPERATION_TIMEDELTA, REFRESH_TOKEN_EXPIRATION_TIMEDELTA, auth_config
 from flasgger import Swagger
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-
-from api.v1.urls import urls
-from api.v1.views.role import role
-from core.config import (ACCESS_TOKEN_EXPERATION_TIMEDELTA,
-                         REFRESH_TOKEN_EXPIRATION_TIMEDELTA, auth_config)
 
 from .containers import ApplicationContainer
 
@@ -22,6 +23,7 @@ def create_app():
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = REFRESH_TOKEN_EXPIRATION_TIMEDELTA
 
     app.register_blueprint(role)
+    app.register_blueprint(oauth)
 
     api = Api(app)
 

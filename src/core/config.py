@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 
 from pydantic import BaseSettings, Field
@@ -27,8 +29,10 @@ auth_config = AuthSettings()
 class Config:
     DEBUG = True
     SECRET_KEY = "YOUR_RANDOM_SECRET_KEY"
-    SQLALCHEMY_DATABASE_URI = (f"postgresql://{auth_config.pg_user}:{auth_config.pg_password}@"
-                               f"{auth_config.db_host}/{auth_config.db_name}")
+    SQLALCHEMY_DATABASE_URI = (
+        f"postgresql://{auth_config.pg_user}:{auth_config.pg_password}@"
+        f"{auth_config.db_host}/{auth_config.db_name}"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     FLASK_HOST = 5000
 
@@ -39,8 +43,8 @@ config = Config()
 CACHE_REFRESH_TOKEN_EXPIRATION_TIME = 15 * 60
 CACHE_ACCESS_TOKEN_EXPERATION_TIME = 10 * 24 * 60 * 60
 REFRESH_TOKEN_EXPIRATION_TIMEDELTA = datetime.timedelta(
-    CACHE_REFRESH_TOKEN_EXPIRATION_TIME
+    CACHE_REFRESH_TOKEN_EXPIRATION_TIME,
 )
 ACCESS_TOKEN_EXPERATION_TIMEDELTA = datetime.timedelta(
-    CACHE_ACCESS_TOKEN_EXPERATION_TIME
+    CACHE_ACCESS_TOKEN_EXPERATION_TIME,
 )

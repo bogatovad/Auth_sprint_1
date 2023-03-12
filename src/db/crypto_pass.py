@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 import os
 from abc import ABC, abstractmethod
@@ -24,7 +26,7 @@ class PBKDF2StoragePassword(StoragePassword):
         return hashlib.pbkdf2_hmac(algorithm, password.encode("utf-8"), salt, 100000)
 
     def create_hash(self, *args, **kwargs):
-        password, = args
+        (password,) = args
         length_salt: int = 32
         salt: bytes = os.urandom(length_salt)
         key_pbkdf2_hmac = self._generate_key(password, salt)
@@ -37,6 +39,7 @@ class PBKDF2StoragePassword(StoragePassword):
     def check_password(self, *args, **kwargs):
         password, password_in_datastage = args
         key_pbkdf2_hmac, salt = self._extract_salt_and_key(
-            password_in_datastage)
+            password_in_datastage,
+        )
         new_key_pbkdf2_hmac = self._generate_key(password, salt)
         return new_key_pbkdf2_hmac == key_pbkdf2_hmac

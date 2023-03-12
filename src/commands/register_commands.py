@@ -1,5 +1,6 @@
-import click
+from __future__ import annotations
 
+import click
 from commands.user import create_superuser_command
 
 
