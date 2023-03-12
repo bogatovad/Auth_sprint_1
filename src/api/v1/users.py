@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from http import HTTPStatus
 
+
 from api.v1.arguments import create_parser_args_change_auth_data, create_parser_args_login, create_parser_args_signup
 from api.v1.schemas import HistorySchemaOut
 from core.limiter import request_limit
@@ -16,6 +17,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from flask_restful import request, Resource
 from services.auth_service import JwtAuth
 from services.exceptions import AuthError, DuplicateUserError
+from core.breaker import breaker, CustomCircuitBreakerError, handle_breaker_errors
 
 
 def generate_pass():
@@ -83,6 +85,8 @@ class History(Resource):
 
     @jwt_required()
     @request_limit
+    @breaker
+    @handle_breaker_errors
     def get(self):
         page, per_page = self._parse_args()
         identity = get_jwt_identity()
@@ -104,6 +108,8 @@ class ChangePersonalData(Resource):
 
     @jwt_required()
     @request_limit
+    @breaker
+    @handle_breaker_errors
     def post(self):
         args = create_parser_args_signup()
         identity = get_jwt_identity()
@@ -126,6 +132,8 @@ class SignUp(Resource):
 
     @staticmethod
     @request_limit
+    @breaker
+    @handle_breaker_errors
     def post():
         """
         Sign up.
@@ -194,6 +202,8 @@ class Login(Resource):
 
     @staticmethod
     @request_limit
+    @breaker
+    @handle_breaker_errors
     def post():
         """
         Login
@@ -243,6 +253,8 @@ class Logout(Resource):
 
     @jwt_required()
     @request_limit
+    @breaker
+    @handle_breaker_errors
     def post(self):
         """
         Logout.
@@ -269,6 +281,8 @@ class RefreshToken(Resource):
 
     @jwt_required(refresh=True)
     @request_limit
+    @breaker
+    @handle_breaker_errors
     def get(self):
         """
         Refreshing tokens.

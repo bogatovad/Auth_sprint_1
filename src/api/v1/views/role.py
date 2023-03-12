@@ -3,6 +3,7 @@ from __future__ import annotations
 from http import HTTPStatus
 from flask import Blueprint, jsonify, make_response, request
 
+from core.breaker import breaker, CustomCircuitBreakerError, handle_breaker_errors
 from core.limiter import request_limit
 from db.models import Permission, Role, User
 from db.postgres import db
@@ -17,6 +18,8 @@ role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
 
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.post("/")
 @admin_only()
 def add_role():
@@ -34,6 +37,8 @@ def add_role():
 
 
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.get("/")
 @admin_only()
 def all_roles():
@@ -42,6 +47,8 @@ def all_roles():
 
 
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.put("/<int:role_id>")
 @admin_only()
 def update_role(role_id: int):
@@ -57,6 +64,8 @@ def update_role(role_id: int):
 
 
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.delete("/<int:role_id>")
 @admin_only()
 def remove_role(role_id: int):
@@ -68,7 +77,10 @@ def remove_role(role_id: int):
     return jsonify(message=f"Role {role_id} has been removed!"), HTTPStatus.OK
 
 
+
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.post("/<int:role_id>/user/<user_id>")
 @admin_only()
 def add_user_role(role_id: int, user_id: str):
@@ -80,7 +92,10 @@ def add_user_role(role_id: int, user_id: str):
     return UserSchemaOut().dump(user), HTTPStatus.OK
 
 
+
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.delete("/<int:role_id>/user/<user_id>")
 @admin_only()
 def revoke_user_role(role_id: int, user_id: str):
@@ -98,6 +113,8 @@ def revoke_user_role(role_id: int, user_id: str):
 
 
 @request_limit
+@breaker
+@handle_breaker_errors
 @role.get("/permissions/user/<user_id>")
 @admin_only()
 def get_user_permissions(user_id):
