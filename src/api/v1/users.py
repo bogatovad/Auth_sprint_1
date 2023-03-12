@@ -270,13 +270,10 @@ class Logout(Resource):
                   example: Log outed
 
         """
-        try:
-            user_id = get_jwt_identity()
-            jti = get_jwt()["jti"]
-            redis_client.set_user_invalid_access_token(user_id=user_id, jti=jti)
-            return make_response(jsonify(message="Log outed"), HTTPStatus.OK)
-        except CustomCircuitBreakerError as e:
-            return {"message": e.ERROR_MESSAGE}, HTTPStatus.SERVICE_UNAVAILABLE
+        user_id = get_jwt_identity()
+        jti = get_jwt()["jti"]
+        redis_client.set_user_invalid_access_token(user_id=user_id, jti=jti)
+        return make_response(jsonify(message="Log outed"), HTTPStatus.OK)
 
 
 class RefreshToken(Resource):
