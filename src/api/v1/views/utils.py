@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from flask import jsonify, make_response
@@ -19,10 +21,11 @@ def set_permissions(session, model, role, permissions_list):
         permission = get_or_create(
             session,
             model,
-            resource=item['resource'],
-            method=item['method'])
+            resource=item["resource"],
+            method=item["method"],
+        )
         role.add_permission(permission)
 
 
 def return_error(text: Any | None, http_code: int):
-    return abort(make_response(jsonify({'msg': text}), http_code))
+    return abort(make_response(jsonify({"msg": text}), http_code))

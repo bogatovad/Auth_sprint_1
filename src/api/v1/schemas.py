@@ -1,4 +1,6 @@
-from marshmallow import Schema, fields
+from __future__ import annotations
+
+from marshmallow import fields, Schema
 
 
 class PermissionSchemaOut(Schema):

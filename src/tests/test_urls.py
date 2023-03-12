@@ -1,9 +1,10 @@
-import http
+from __future__ import annotations
 
-from flask_jwt_extended import get_jwt, get_jwt_identity
+import http
 
 from db.redis_client import redis_client
 from db.storage.user_storage import PostgresUserStorage
+from flask_jwt_extended import get_jwt, get_jwt_identity
 from services import exceptions
 
 AUTH_URL = "/api/v1/auth"

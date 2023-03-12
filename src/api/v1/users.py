@@ -1,34 +1,86 @@
+from __future__ import annotations
+
+import random
 from datetime import datetime
 from http import HTTPStatus
 
-from flask import jsonify, make_response
-from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                get_jwt, get_jwt_identity, jwt_required)
-from flask_restful import Resource, request
-from api.v1.arguments import (create_parser_args_change_auth_data,
-                              create_parser_args_login,
-                              create_parser_args_signup)
+
+from api.v1.arguments import create_parser_args_change_auth_data, create_parser_args_login, create_parser_args_signup
 from api.v1.schemas import HistorySchemaOut
 from core.limiter import request_limit
 from db.redis_client import redis_client
 from db.storage.device_storage import DeviceStorage
 from db.storage.history_storage import HistoryAuthStorage
 from db.storage.user_storage import PostgresUserStorage
+from flask import jsonify, make_response
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt, get_jwt_identity, jwt_required
+from flask_restful import request, Resource
 from services.auth_service import JwtAuth
 from services.exceptions import AuthError, DuplicateUserError
 from core.breaker import breaker, CustomCircuitBreakerError, handle_breaker_errors
 
 
+def generate_pass():
+    chars = "+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+    length = 11
+    password = ""
+    for _ in range(length):
+        password += random.choice(chars)
+    return password
+
+
+def save_history_auth(user_agent, user_storage):
+    history_storage = HistoryAuthStorage()
+    device_storage = DeviceStorage()
+    devices_user = list(
+        device_storage.filter(
+            name=user_agent,
+            owner=user_storage,
+        ),
+    )
+
+    if not devices_user:
+        # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
+        # Будет реализовано в следующем спринте.
+
+        # сохраняем новое устройство пользователя.
+        current_device = device_storage.create(
+            name=user_agent,
+            owner=user_storage,
+        )
+    else:
+        current_device = device_storage.get(
+            name=user_agent,
+            owner=user_storage,
+        )
+
+    # делаем запись в таблицу history_auth.
+    history_storage.create(
+        user=user_storage,
+        device=current_device,
+        date_auth=datetime.now(),
+    )
+
+
+def create_tokens(identity: str):
+    # Если пользователь тот, то выдаем токены.
+    refresh_token, access_token = create_refresh_token(identity), create_access_token(
+        identity,
+    )
+
+    # сохраняем refresh токен в редис.
+    redis_client.set_user_refresh_token(identity, refresh_token)
+    return refresh_token, access_token
+
+
 class History(Resource):
     """Реализация метода для получения истории авторизаций."""
+
     @staticmethod
     def _parse_args():
         args = request.args
         per_page: int = 10
-        if args:
-            page = int(args["page"])
-        else:
-            page = 1
+        page = int(args["page"]) if args else 1
         return page, per_page
 
     @jwt_required()
@@ -43,7 +95,9 @@ class History(Resource):
         user = storage.get_by_id(identity)
         history_queryset = history_storage.get_history_user(user.id)
         paginator = history_queryset.paginate(
-            page=page, per_page=per_page, error_out=False
+            page=page,
+            per_page=per_page,
+            error_out=False,
         )
         history = [HistorySchemaOut().dump(item) for item in paginator]
         return {user.login: history}
@@ -134,7 +188,9 @@ class SignUp(Resource):
         device_storage.get_or_create(name=user_agent, owner=user)
         return make_response(
             jsonify(
-                message=f"User '{login}' successfully created"), HTTPStatus.CREATED
+                message=f"User '{login}' successfully created",
+            ),
+            HTTPStatus.CREATED,
         )
 
 
@@ -183,30 +239,8 @@ class Login(Resource):
             return {"message": error.message}, HTTPStatus.UNAUTHORIZED
 
         identity = str(user.id)
-        refresh_token, access_token = create_refresh_token(
-            identity
-        ), create_access_token(identity)
-
-        history_storage = HistoryAuthStorage()
-        device_storage = DeviceStorage()
-        devices_user = list(device_storage.filter(name=user_agent, owner=user))
-
-        if not devices_user:
-            # Отправить пользователю уведомление о том, что произошел вход с другого устройства.
-            # Будет реализовано в следующем спринте.
-
-            # сохраняем новое устройство пользователя.
-            current_device = device_storage.create(name=user_agent, owner=user)
-        else:
-            current_device = device_storage.get(name=user_agent, owner=user)
-
-        # делаем запись в таблицу history_auth.
-        history_storage.create(
-            user=user, device=current_device, date_auth=datetime.now()
-        )
-
-        # сохраняем refresh токен в редис.
-        redis_client.set_user_refresh_token(identity, refresh_token)
+        refresh_token, access_token = create_tokens(identity)
+        save_history_auth(user_agent, user)
 
         return make_response(
             jsonify(access_token=access_token, refresh_token=refresh_token),

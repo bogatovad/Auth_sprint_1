@@ -1,4 +1,7 @@
-from db.models import Device, User
+from __future__ import annotations
+
+from db.models import Device
+from db.models import User
 from db.postgres import db
 
 
@@ -16,7 +19,10 @@ class DeviceStorage:
 
     def filter(self, name: str, owner: User):
         return db.session.execute(
-            db.Query(Device).filter(Device.name == name, Device.owner == owner)
+            db.Query(Device).filter(
+                Device.name == name,
+                Device.owner == owner,
+            ),
         )
 
     @staticmethod
