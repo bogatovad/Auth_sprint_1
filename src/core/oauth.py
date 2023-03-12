@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from authlib.integrations.flask_client import OAuth
 from flask import Flask
+import os
 
 oauth_client = OAuth()
 
+
 oauth_client.register(
     name="vk",
-    client_id="51567000",
-    client_secret="K56kDbZyl7dPFJxU4Evx",
+    client_id=os.environ.get('CLIENT_ID_VK'),
+    client_secret=os.environ.get('CLIENT_SECRET_VK'),
     access_token_url="https://oauth.vk.com/access_token",
     access_token_params={
-        "client_id": "51567000",
-        "client_secret": "K56kDbZyl7dPFJxU4Evx",
+        "client_id": os.environ.get('CLIENT_ID_VK'),
+        "client_secret": os.environ.get('CLIENT_SECRET_VK'),
     },
     authorize_url="https://oauth.vk.com/authorize",
     authorize_params=None,
@@ -22,8 +24,8 @@ oauth_client.register(
 
 oauth_client.register(
     name="yandex",
-    client_id="8fc229d7c9cc4517897549ed19f82964",
-    client_secret="c708f75b1c764f70a0a91c78b69b2831",
+    client_id=os.environ.get('CLIENT_ID_YANDEX'),
+    client_secret=os.environ.get('CLIENT_SECRET_YANDEX'),
     access_token_url="https://oauth.yandex.ru/token",
     access_token_params=None,
     authorize_url="https://oauth.yandex.ru/authorize",
@@ -34,8 +36,8 @@ oauth_client.register(
 
 oauth_client.register(
     name="mail",
-    client_id="66c3117357a14117a98d126d6d74777b",
-    client_secret="9f26b8a1294f4ff9a49504632af387d3",
+    client_id=os.environ.get('CLIENT_ID_MAIL'),
+    client_secret=os.environ.get('CLIENT_SECRET_MAIL'),
     access_token_url="https://oauth.mail.ru/token",
     access_token_params=None,
     authorize_url="https://oauth.mail.ru/login",

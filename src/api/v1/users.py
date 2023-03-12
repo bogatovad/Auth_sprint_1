@@ -4,17 +4,14 @@ import random
 from datetime import datetime
 from http import HTTPStatus
 
-from api.v1.arguments import create_parser_args_change_auth_data
-from api.v1.arguments import create_parser_args_login
-from api.v1.arguments import create_parser_args_signup
+from api.v1.arguments import create_parser_args_change_auth_data, create_parser_args_login, create_parser_args_signup
 from api.v1.schemas import HistorySchemaOut
 from core.limiter import request_limit
 from db.redis_client import redis_client
 from db.storage.device_storage import DeviceStorage
 from db.storage.history_storage import HistoryAuthStorage
 from db.storage.user_storage import PostgresUserStorage
-from flask import jsonify
-from flask import make_response
+from flask import jsonify, make_response
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt, get_jwt_identity, jwt_required
 from flask_restful import request, Resource
 from services.auth_service import JwtAuth
@@ -25,7 +22,7 @@ def generate_pass():
     chars = "+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
     length = 11
     password = ""
-    for i in range(length):
+    for _ in range(length):
         password += random.choice(chars)
     return password
 
@@ -81,10 +78,7 @@ class History(Resource):
     def _parse_args():
         args = request.args
         per_page: int = 10
-        if args:
-            page = int(args["page"])
-        else:
-            page = 1
+        page = int(args["page"]) if args else 1
         return page, per_page
 
     @jwt_required()

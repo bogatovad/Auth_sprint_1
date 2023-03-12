@@ -111,8 +111,5 @@ def authorize(provider_name):
 def remove(provider_name):
     user_id = get_jwt_identity()
     oauth_service = get_provider(provider_name)
-    # try:
     oauth_service.remove(user_id)
-    # except SocialAccountError as error:
-    #    return {"message": error.message}, HTTPStatus.BAD_REQUEST
     return jsonify(message=f"Accont {provider_name} has been removed!"), HTTPStatus.OK
