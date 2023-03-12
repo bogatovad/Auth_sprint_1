@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 import uuid
 
-from sqlalchemy.dialects.postgresql import UUID
-
 from db.postgres import db
-from typing import Optional
 from sqlalchemy import or_
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class User(db.Model):
@@ -41,7 +41,11 @@ class User(db.Model):
         self.roles.append(role)
 
     @classmethod
-    def get_user_by_universal_login(cls, login: Optional[str] = None, email: Optional[str] = None):
+    def get_user_by_universal_login(
+        cls,
+        login: str | None = None,
+        email: str | None = None,
+    ):
         return cls.query.filter(or_(cls.login == login, cls.email == email)).first()
 
 
@@ -53,8 +57,11 @@ class Device(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
     name = db.Column(db.String, nullable=False)
-    user_id = db.Column(UUID(as_uuid=True),
-                        db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey("users.id"),
+        nullable=True,
+    )
 
     # Через устройство мы можем получить историю авторизаций.
     history = db.relationship("HistoryAuth", backref="device", lazy=True)
@@ -70,13 +77,21 @@ class HistoryAuth(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
 
     # С каждой авторизацией связан пользователь.
-    user_id = db.Column(UUID(as_uuid=True),
-                        db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey("users.id"),
+        nullable=True,
+    )
     date_auth = db.Column(db.DateTime)
 
     # С каждой авторизацией связано устройство с которого она была выполнена.
-    device_id = db.Column(db.Integer, db.ForeignKey(
-        "device.id"), nullable=False)
+    device_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "device.id",
+        ),
+        nullable=False,
+    )
 
 
 class Permission(db.Model):
@@ -144,16 +159,30 @@ class Role(db.Model):
 
 
 class SocialAccount(db.Model):
-    __tablename__ = 'social_account'
+    __tablename__ = "social_account"
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
-    user = db.relationship(User, backref=db.backref('social_accounts', lazy=True))
+    user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(
+            "users.id",
+        ),
+        nullable=False,
+    )
+    user = db.relationship(
+        User,
+        backref=db.backref(
+            "social_accounts",
+            lazy=True,
+        ),
+    )
 
     social_id = db.Column(db.Text, nullable=False)
     social_name = db.Column(db.Text, nullable=False)
 
-    __table_args__ = (db.UniqueConstraint('social_id', 'social_name', name='social_pk'),)
+    __table_args__ = (
+        db.UniqueConstraint("social_id", "social_name", name="social_pk"),
+    )
 
     def __repr__(self):
-        return f'<SocialAccount {self.social_name}:{self.user_id}>'
+        return f"<SocialAccount {self.social_name}:{self.user_id}>"

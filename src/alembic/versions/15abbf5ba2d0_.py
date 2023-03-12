@@ -5,13 +5,15 @@ Revises: dd1ff5cdd47a
 Create Date: 2023-03-02 20:41:48.686551
 
 """
-from alembic import op
+from __future__ import annotations
+
 import sqlalchemy as sa
+from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = '15abbf5ba2d0'
-down_revision = 'dd1ff5cdd47a'
+revision = "15abbf5ba2d0"
+down_revision = "dd1ff5cdd47a"
 branch_labels = None
 depends_on = None
 

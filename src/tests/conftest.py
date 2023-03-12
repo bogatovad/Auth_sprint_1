@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from random import randint
 
 import pytest
-from flask_jwt_extended import create_access_token, create_refresh_token
-
 from db.postgres import db, init_db
+from flask_jwt_extended import create_access_token, create_refresh_token
 from services.application import create_app
 
 
@@ -13,7 +14,7 @@ def app():
     app.config.update(
         {
             "TESTING": True,
-        }
+        },
     )
 
     init_db(app)

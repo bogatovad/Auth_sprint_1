@@ -1,12 +1,21 @@
+from __future__ import annotations
+
 from http import HTTPStatus
 
-from flask import Blueprint, jsonify, make_response, request
-
-from db.models import Permission, Role, User
+from db.models import Permission
+from db.models import Role
+from db.models import User
 from db.postgres import db
+from flask import Blueprint
+from flask import jsonify
+from flask import make_response
+from flask import request
 
-from ..schemas import ListRoleSchemaOut, RoleSchemaOut, UserSchemaOut
-from .utils import return_error, set_permissions
+from ..schemas import ListRoleSchemaOut
+from ..schemas import RoleSchemaOut
+from ..schemas import UserSchemaOut
+from .utils import return_error
+from .utils import set_permissions
 
 role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 
@@ -14,11 +23,11 @@ role = Blueprint("role", __name__, url_prefix="/api/v1/role")
 @role.post("/")
 def add_role():
     """Метод для создания роли."""
-    role_name = request.json['name']
+    role_name = request.json["name"]
     role = Role.query.filter_by(name=role_name).one_or_none()
     if role:
-        return_error('role already exists', HTTPStatus.BAD_REQUEST)
-    permissions_list = request.json['permissions']
+        return_error("role already exists", HTTPStatus.BAD_REQUEST)
+    permissions_list = request.json["permissions"]
     new_role = Role(name=role_name)
     set_permissions(db.session, Permission, new_role, permissions_list)
     db.session.add(new_role)
@@ -52,7 +61,7 @@ def remove_role(role_id: int):
     role = Role.query.get_or_404(role_id)
     db.session.delete(role)
     db.session.commit()
-    return jsonify(message=f'Role {role_id} has been removed!'), HTTPStatus.OK
+    return jsonify(message=f"Role {role_id} has been removed!"), HTTPStatus.OK
 
 
 @role.post("/<int:role_id>/user/<user_id>")
@@ -74,10 +83,13 @@ def revoke_user_role(role_id: int, user_id: str):
         user.roles.remove(role)
         db.session.commit()
         return make_response(UserSchemaOut().dump(user), HTTPStatus.OK)
-    return jsonify(message=f'Role {role_id} doesnt set in this user.'), HTTPStatus.BAD_REQUEST
+    return (
+        jsonify(message=f"Role {role_id} doesnt set in this user."),
+        HTTPStatus.BAD_REQUEST,
+    )
 
 
 @role.get("/permissions/user/<user_id>")
 def get_user_permissions(user_id):
     user = User.query.get_or_404(user_id)
-    return ListRoleSchemaOut().dump({'roles': user.roles}), HTTPStatus.OK
+    return ListRoleSchemaOut().dump({"roles": user.roles}), HTTPStatus.OK

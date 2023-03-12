@@ -1,5 +1,6 @@
-from .users import (ChangePersonalData, History, Login, Logout, RefreshToken,
-                    SignUp, SocialServiceRedirect, SocialService)
+from __future__ import annotations
+
+from .users import ChangePersonalData, History, Login, Logout, RefreshToken, SignUp
 
 API_URL = "/api/v1"
 AUTH_URL = f"{API_URL}/auth"
@@ -16,6 +17,4 @@ urls = [
     (Logout, path("logout")),
     (History, path("history_auth")),
     (ChangePersonalData, path("change")),
-    (SocialServiceRedirect, path("login/vk")),
-    (SocialService, path("vk_logic"))
 ]

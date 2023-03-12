@@ -1,5 +1,6 @@
-import click
+from __future__ import annotations
 
+import click
 from db.models import Role
 from services.auth_service import JwtAuth
 from services.exceptions import DuplicateUserError
@@ -9,7 +10,7 @@ def create_superuser_command(login, password, email):
     """Команда для создания супер пользователя."""
     auth_service = JwtAuth()
     try:
-        admin_role = Role.get_or_create(name='superuser')
+        admin_role = Role.get_or_create(name="superuser")
         user = auth_service.signup(login, password, email)
         user.add_role(admin_role)
         click.echo(f"User {user} created")
