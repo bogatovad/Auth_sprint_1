@@ -26,7 +26,7 @@ class BaseAuth(ABC):
 class JwtAuth(BaseAuth):
     """Реализация аутентефикации на jwt-токенах."""
 
-    def signup(self, *args, **kwargs):
+    def signup(self, *args, **kwargs) -> User:
         """Реализаия метода регистрации пользователя."""
         login, password, email = args
         storage = PostgresUserStorage()

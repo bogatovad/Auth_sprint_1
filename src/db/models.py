@@ -63,7 +63,7 @@ class Device(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
     user_id = db.Column(
         UUID(as_uuid=True),
         db.ForeignKey("users.id", ondelete="CASCADE"),
@@ -110,8 +110,8 @@ class Permission(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
 
     # доступ описывается ресурсом и методом.
-    resource = db.Column(db.String, nullable=False)
-    method = db.Column(db.String, nullable=False)
+    resource = db.Column(db.String(120), nullable=False)
+    method = db.Column(db.String(120), nullable=False)
 
     roles = db.relationship("Role", secondary="permissions_roles")
 
@@ -143,7 +143,7 @@ class Role(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
-    name = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String(120), nullable=False, unique=True)
 
     # Набор прав (доступов), которые содержит данная роль.
     permissions = db.relationship("Permission", secondary="permissions_roles")

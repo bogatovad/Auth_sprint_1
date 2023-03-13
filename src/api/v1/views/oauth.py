@@ -16,7 +16,7 @@ from flask import url_for
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from services.auth_service import JwtAuth
-from services.oauth_service import get_provider
+from services.oauth_service import OAuthService, get_provider
 
 oauth = Blueprint("oauth", __name__, url_prefix="/api/v1/oauth")
 
@@ -27,12 +27,12 @@ def generate_pass():
     chars = "+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
     length = 11
     password = ""
-    for i in range(length):
+    for _ in range(length):
         password += random.choice(chars)
     return password
 
 
-def signup(auth_service, login, email, user_agent):
+def signup(auth_service: OAuthService, login: str, email: str, user_agent: str) -> User:
     # делаем регистрацию пользователя если его нет.
     password = generate_pass()
     user = auth_service.signup(login, password, email)
@@ -46,7 +46,7 @@ def signup(auth_service, login, email, user_agent):
     return user
 
 
-def get_or_create(auth_service, login, email, user_agent):
+def get_or_create(auth_service: OAuthService, login: str, email: str, user_agent: str) -> User:
     try:
         user = signup(auth_service, login, email, user_agent)
     except Exception as ex:
@@ -55,7 +55,7 @@ def get_or_create(auth_service, login, email, user_agent):
 
 
 @oauth.get("/login/<string:provider_name>")
-def login(provider_name):
+def login(provider_name: str):
     client = get_client().create_client(provider_name)
     redirect_uri = url_for(
         f"oauth.authorize",
@@ -66,8 +66,8 @@ def login(provider_name):
 
 
 @oauth.get("/authorize/<string:provider_name>")
-def authorize(provider_name):
-    oauth_service = get_provider(provider_name)
+def authorize(provider_name: str):
+    oauth_service: OAuthService = get_provider(provider_name)
     user_info = oauth_service.get_user_info()
     user_agent = request.headers.get("user_agent")
     user_storage = User.get_user_by_universal_login(email=user_info.email)
@@ -108,7 +108,7 @@ def authorize(provider_name):
 
 @oauth.delete("remove/<string:provider_name>")
 @jwt_required()
-def remove(provider_name):
+def remove(provider_name: str):
     user_id = get_jwt_identity()
     oauth_service = get_provider(provider_name)
     oauth_service.remove(user_id)
