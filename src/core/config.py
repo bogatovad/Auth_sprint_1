@@ -6,7 +6,7 @@ from pydantic import BaseSettings, Field
 
 
 class AuthSettings(BaseSettings):
-    db_name: str = Field("auth_database", env="DB_NAME")
+    db_name: str = Field("auth_database", env="POSTGRES_DB")
     pg_user: str = Field("app", env="POSTGRES_USER")
     pg_password: str = Field(env="POSTGRES_PASSWORD")
     db_host: str = Field("postgres_auth", env="POSTGRES_HOST")
