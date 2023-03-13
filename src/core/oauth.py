@@ -7,8 +7,11 @@ from core.config import vk_config, yandex_config, mail_config
 oauth_client = OAuth()
 
 
-for config in (vk_config, yandex_config, mail_config):
-    oauth_client.register(**config)
+def register_providers():
+    for config in (vk_config, yandex_config, mail_config):
+        oauth_client.register(**config)
+
+register_providers()
 
 def init_oauth(app: Flask):
     oauth_client.init_app(app)
