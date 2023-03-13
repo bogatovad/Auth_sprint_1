@@ -34,7 +34,7 @@ def upgrade():
         sa.UniqueConstraint("social_id", "social_name", name="social_pk"),
     )
     op.create_unique_constraint(None, "device", ["id"])
-    op.create_unique_constraint(None, "history_auth", ["id"])
+    op.create_unique_constraint(None, "history_auth", ["id", "date_auth"])
     op.create_unique_constraint(None, "permissions", ["id"])
     op.create_unique_constraint(None, "roles", ["id"])
     op.create_unique_constraint(None, "users", ["id"])
