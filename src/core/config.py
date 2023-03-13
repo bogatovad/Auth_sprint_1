@@ -17,6 +17,7 @@ class AuthSettings(BaseSettings):
     jwt_secret_key: str = Field("super-secret", env="JWT_SECRET_KEY")
     jaeger_host: str = Field("jaeger", env="JAEGER_HOST")
     jaeger_port: int = Field(6831, env="JAEGER_PORT")
+    tracer_enabled: bool = Field(False, env="TRACER_ENABLED")
 
 
     class Config:

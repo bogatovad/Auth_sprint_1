@@ -2,6 +2,7 @@ from __future__ import annotations
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from commands.register_commands import Command
+from core.config import auth_config
 from core.oauth import init_oauth
 from db.postgres import init_db
 from services.application import create_app
@@ -20,8 +21,10 @@ def before_request():
         raise RuntimeError("request id is required")
 
 
-configure_tracer()
-FlaskInstrumentor().instrument_app(app)
+if auth_config.tracer_enabled:
+    configure_tracer()
+    FlaskInstrumentor().instrument_app(app)
+
 command = Command(app)
 command.register_command()
 init_db(app)
