@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 
 from pydantic import BaseSettings, Field
+import os
 
 
 class AuthSettings(BaseSettings):
@@ -48,3 +49,44 @@ REFRESH_TOKEN_EXPIRATION_TIMEDELTA = datetime.timedelta(
 ACCESS_TOKEN_EXPERATION_TIMEDELTA = datetime.timedelta(
     CACHE_ACCESS_TOKEN_EXPERATION_TIME,
 )
+
+
+vk_config = {
+    "name": "vk",
+    "client_id": os.environ.get('CLIENT_ID_VK'),
+    "client_secret": os.environ.get('CLIENT_SECRET_VK'),
+    "access_token_url": "https://oauth.vk.com/access_token",
+    "access_token_params": {
+        "client_id": os.environ.get('CLIENT_ID_VK'),
+        "client_secret": os.environ.get('CLIENT_SECRET_VK'),
+    },
+    "authorize_url": "https://oauth.vk.com/authorize",
+    "authorize_params": None,
+    "api_base_url": "https://oauth.vk.com/",
+    "client_kwargs": {"scope": "friends, notify, photos, wall, email"},
+}
+
+yandex_config = {
+    "name": "yandex",
+    "client_id": os.environ.get('CLIENT_ID_YANDEX'),
+    "client_secret": os.environ.get('CLIENT_SECRET_YANDEX'),
+    "access_token_url": "https://oauth.yandex.ru/token",
+    "access_token_params": None,
+    "authorize_url": "https://oauth.yandex.ru/authorize",
+    "authorize_params": None,
+    "userinfo_endpoint": "https://login.yandex.ru/info?",
+    "api_base_url": "https://oauth.yandex.ru/",
+}
+
+
+mail_config = {
+    "name": "mail",
+    "client_id": os.environ.get('CLIENT_ID_MAIL'),
+    "client_secret": os.environ.get('CLIENT_SECRET_MAIL'),
+    "access_token_url": "https://oauth.mail.ru/token",
+    "access_token_params": None,
+    "authorize_url": "https://oauth.mail.ru/login",
+    "authorize_params": None,
+    "api_base_url": "https://oauth.mail.ru",
+    "userinfo_endpoint": "https://oauth.mail.ru/userinfo"
+}

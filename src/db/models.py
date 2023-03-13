@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Optional
 
 from db.postgres import db
 from sqlalchemy import or_
@@ -25,7 +26,6 @@ class User(db.Model):
     # Храним хэш пароля - бинарные данные.
     password = db.Column(db.LargeBinary, nullable=False)
     email = db.Column(db.String(120), nullable=False)
-    
     # C пользователем связаны его устройства.
     devices = db.relationship("Device", backref="owner", lazy=True)
 
@@ -73,10 +73,7 @@ class HistoryAuth(db.Model):
     user с устройства device в дату date_auth."""
 
     __tablename__ = "history_auth"
-    __table_args__ = {
-        "extend_existing": True,
-        'postgresql_partition_by': 'RANGE (date_auth)',
-    }
+    __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
 
