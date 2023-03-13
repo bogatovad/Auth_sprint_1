@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from db.postgres import db
-from sqlalchemy import or_
+from sqlalchemy import or_, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 
 
@@ -73,10 +73,9 @@ class HistoryAuth(db.Model):
     user с устройства device в дату date_auth."""
 
     __tablename__ = "history_auth"
-    __table_args__ = {
-        "extend_existing": True,
-        'postgresql_partition_by': 'RANGE (date_auth)',
-    }
+    __table_args__ = (UniqueConstraint('id', 'date_auth'),
+        {"extend_existing": True, 'postgresql_partition_by': 'RANGE (date_auth)'}
+    )
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
 
