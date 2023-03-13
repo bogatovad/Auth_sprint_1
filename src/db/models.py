@@ -73,7 +73,10 @@ class HistoryAuth(db.Model):
     user с устройства device в дату date_auth."""
 
     __tablename__ = "history_auth"
-    __table_args__ = {"extend_existing": True}
+    __table_args__ = {
+        "extend_existing": True,
+        'postgresql_partition_by': 'RANGE (date_auth)',
+    }
 
     id = db.Column(db.Integer, primary_key=True, unique=True, nullable=False)
 
