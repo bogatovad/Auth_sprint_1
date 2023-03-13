@@ -27,14 +27,20 @@ class User(db.Model):
     email = db.Column(db.String(120), nullable=False)
     
     # C пользователем связаны его устройства.
-    devices = db.relationship("Device", backref="owner", lazy=True)
+    devices = db.relationship("Device", backref=db.backref("owner", passive_deletes=True))
 
     # C пользователем связана его история.
-    history = db.relationship("HistoryAuth", backref="user", lazy=True)
+    history = db.relationship("HistoryAuth", backref=db.backref("user", passive_deletes=True))
 
     # C пользователем связаны его роли.
     roles = db.relationship("Role", secondary="users_roles")
-
+    social_accounts = db.relationship(
+        "SocialAccount",
+        back_populates="user",
+        cascade="all, delete",
+        passive_deletes=True
+    )
+    
     def __repr__(self):
         return f"<User {self.login}>"
 
@@ -60,7 +66,7 @@ class Device(db.Model):
     name = db.Column(db.String, nullable=False)
     user_id = db.Column(
         UUID(as_uuid=True),
-        db.ForeignKey("users.id"),
+        db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=True,
     )
 
@@ -82,16 +88,16 @@ class HistoryAuth(db.Model):
     # С каждой авторизацией связан пользователь.
     user_id = db.Column(
         UUID(as_uuid=True),
-        db.ForeignKey("users.id"),
-        nullable=True,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    date_auth = db.Column(db.DateTime)
+    date_auth = db.Column(db.DateTime, nullable=False)
 
     # С каждой авторизацией связано устройство с которого она была выполнена.
     device_id = db.Column(
         db.Integer,
         db.ForeignKey(
-            "device.id",
+        "device.id",
         ),
         nullable=False,
     )
@@ -169,15 +175,13 @@ class SocialAccount(db.Model):
         UUID(as_uuid=True),
         db.ForeignKey(
             "users.id",
+            ondelete="CASCADE"
         ),
         nullable=False,
     )
     user = db.relationship(
         User,
-        backref=db.backref(
-            "social_accounts",
-            lazy=True,
-        ),
+        back_populates="social_accounts"
     )
 
     social_id = db.Column(db.Text, nullable=False)
