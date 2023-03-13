@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC
 
 from core.oauth import oauth_client
+from core.enums import Providers
 from db.models import SocialAccount
 from db.postgres import db
 from services.exceptions import SocialAccountError
@@ -51,9 +52,9 @@ class VkOAuthService(OAuthService):
 def get_provider(provider_name: str) -> OAuthService:
     """По имени провайдера получить сервси для авторизации."""
     providers_to_service: dict = {
-        "vk": VkOAuthService,
-        "yandex": YandexOAuthService,
-        "mail": MailOAuthService,
+        Providers.VK.value: VkOAuthService,
+        Providers.YANDEX.value: YandexOAuthService,
+        Providers.MAIL.value: MailOAuthService,
     }
 
     if provider_name not in providers_to_service:

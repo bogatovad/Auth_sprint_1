@@ -4,11 +4,13 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask
 import os
 
+from core.enums import Providers
+
 oauth_client = OAuth()
 
 
 oauth_client.register(
-    name="vk",
+    name=Providers.VK.value,
     client_id=os.environ.get('CLIENT_ID_VK'),
     client_secret=os.environ.get('CLIENT_SECRET_VK'),
     access_token_url="https://oauth.vk.com/access_token",
@@ -23,7 +25,7 @@ oauth_client.register(
 )
 
 oauth_client.register(
-    name="yandex",
+    name=Providers.YANDEX.value,
     client_id=os.environ.get('CLIENT_ID_YANDEX'),
     client_secret=os.environ.get('CLIENT_SECRET_YANDEX'),
     access_token_url="https://oauth.yandex.ru/token",
@@ -35,7 +37,7 @@ oauth_client.register(
 )
 
 oauth_client.register(
-    name="mail",
+    name=Providers.MAIL.value,
     client_id=os.environ.get('CLIENT_ID_MAIL'),
     client_secret=os.environ.get('CLIENT_SECRET_MAIL'),
     access_token_url="https://oauth.mail.ru/token",
