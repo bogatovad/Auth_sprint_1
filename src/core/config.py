@@ -55,7 +55,7 @@ ACCESS_TOKEN_EXPERATION_TIMEDELTA = datetime.timedelta(
 
 
 vk_config = {
-    "name": Providers.VK,
+    "name": Providers.VK.value,
     "client_id": os.environ.get('CLIENT_ID_VK'),
     "client_secret": os.environ.get('CLIENT_SECRET_VK'),
     "access_token_url": "https://oauth.vk.com/access_token",
@@ -70,7 +70,7 @@ vk_config = {
 }
 
 yandex_config = {
-    "name": Providers.YANDEX,
+    "name": Providers.YANDEX.value,
     "client_id": os.environ.get('CLIENT_ID_YANDEX'),
     "client_secret": os.environ.get('CLIENT_SECRET_YANDEX'),
     "access_token_url": "https://oauth.yandex.ru/token",
@@ -83,7 +83,7 @@ yandex_config = {
 
 
 mail_config = {
-    "name": Providers.MAIL,
+    "name": Providers.MAIL.value,
     "client_id": os.environ.get('CLIENT_ID_MAIL'),
     "client_secret": os.environ.get('CLIENT_SECRET_MAIL'),
     "access_token_url": "https://oauth.mail.ru/token",

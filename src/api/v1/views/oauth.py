@@ -62,8 +62,6 @@ def login(provider_name: str):
         _external=True,
         provider_name=provider_name,
     )
-
-    print("ВОТ КЛИЕНТ!!!", client)
     return client.authorize_redirect(redirect_uri)
 
 
