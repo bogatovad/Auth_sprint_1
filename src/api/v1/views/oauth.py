@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 from api.v1.users import create_tokens
 from api.v1.users import save_history_auth
-from core.oauth import get_client
+from core.oauth import get_client, oauth_client
 from db.models import User
 from db.storage.device_storage import DeviceStorage
 from db.storage.social_account_storage import SocialAccountStorage
@@ -62,6 +62,8 @@ def login(provider_name: str):
         _external=True,
         provider_name=provider_name,
     )
+
+    print("ВОТ КЛИЕНТ!!!", client)
     return client.authorize_redirect(redirect_uri)
 
 
