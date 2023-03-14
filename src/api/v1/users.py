@@ -17,7 +17,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from flask_restful import request, Resource
 from services.auth_service import JwtAuth
 from services.exceptions import AuthError, DuplicateUserError
-from core.breaker import breaker, CustomCircuitBreakerError, handle_breaker_errors
+from core.breaker import breaker, handle_breaker_errors
 
 
 def generate_pass():

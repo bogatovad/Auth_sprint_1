@@ -32,7 +32,7 @@ class MailOAuthProviderInfo(OAuthProviderInfo):
 def get_schema_user_info(provider_name: str) -> OAuthProviderInfo:
     """По имени провайдера получить схему."""
 
-    providers_to_schema: dict = {
+    providers_to_schema: dict[str, type[OAuthProviderInfo]] = {
         Providers.VK.value: VkOAuthProviderInfo,
         Providers.YANDEX.value: YandexOAuthProviderInfo,
         Providers.MAIL.value: MailOAuthProviderInfo

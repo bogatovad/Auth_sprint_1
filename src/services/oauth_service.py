@@ -7,21 +7,21 @@ from core.enums import Providers
 from db.models import SocialAccount
 from db.postgres import db
 from services.exceptions import SocialAccountError
-from services.schemas import get_schema_user_info
+from services.schemas import OAuthProviderInfo, get_schema_user_info
 
 
 class OAuthService(ABC):
     def __init__(self, provider_name):
         self.name = provider_name
 
-    def get_user_info(self, *args, **kwargs):
+    def get_user_info(self, *args, **kwargs) -> OAuthProviderInfo:
         client = oauth_client.create_client(self.name)
         token = client.authorize_access_token()
         access_token = token.get("access_token")
         raw_user_info = client.userinfo(params={"access_token": access_token})
         return get_schema_user_info(self.name)(**raw_user_info)
 
-    def remove(self, user_id):
+    def remove(self, user_id: str) -> None:
         account = SocialAccount.query.filter_by(
             user_id=user_id,
             social_name=self.name,
@@ -43,7 +43,7 @@ class MailOAuthService(OAuthService):
 
 
 class VkOAuthService(OAuthService):
-    def get_user_info(self, *args, **kwargs):
+    def get_user_info(self, *args, **kwargs) -> OAuthProviderInfo:
         client = oauth_client.create_client(self.name)
         token = client.authorize_access_token()
         return get_schema_user_info(self.name)(**token)
@@ -51,7 +51,7 @@ class VkOAuthService(OAuthService):
 
 def get_provider(provider_name: str) -> OAuthService:
     """По имени провайдера получить сервси для авторизации."""
-    providers_to_service: dict = {
+    providers_to_service: dict[str, type[OAuthService]] = {
         Providers.VK.value: VkOAuthService,
         Providers.YANDEX.value: YandexOAuthService,
         Providers.MAIL.value: MailOAuthService,
