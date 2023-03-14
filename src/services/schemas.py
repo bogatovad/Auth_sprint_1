@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from core.enums import Providers
+
 class OAuthProviderInfo(BaseModel):
     """Схема для получения данных о пользователе."""
 
@@ -31,9 +33,9 @@ def get_schema_user_info(provider_name: str) -> OAuthProviderInfo:
     """По имени провайдера получить схему."""
 
     providers_to_schema: dict = {
-        'vk': VkOAuthProviderInfo,
-        'yandex': YandexOAuthProviderInfo,
-        'mail': MailOAuthProviderInfo
+        Providers.VK.value: VkOAuthProviderInfo,
+        Providers.YANDEX.value: YandexOAuthProviderInfo,
+        Providers.MAIL.value: MailOAuthProviderInfo
     }
     if provider_name not in providers_to_schema:
         raise KeyError(f'Schema for proveder {provider_name} dont exists.')

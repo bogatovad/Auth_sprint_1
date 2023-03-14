@@ -4,6 +4,7 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from core.config import vk_config, yandex_config, mail_config
 
+
 oauth_client = OAuth()
 
 

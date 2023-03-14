@@ -115,6 +115,8 @@ def upgrade():
         postgresql_partition_by='RANGE (date_auth)'
         )
 
+    op.create_unique_constraint('uq_history_auth_id_date_auth', 'history_auth', ['id', 'date_auth'])
+
     # Create partitions for each month of the year
     for month in range(1, 13):
         partition_name = f"history_auth_2023_{month:02d}"
@@ -175,6 +177,7 @@ def downgrade():
     for month in range(1, 13):
         partition_name = f"history_auth_2023_{month:02d}"
         op.execute(f"DROP TABLE {partition_name}")
+    op.drop_constraint('uq_history_auth_id_date_auth', 'history_auth', type_='unique')
     op.drop_table("history_auth")
     op.drop_table("roles")
     op.drop_table("users_roles")

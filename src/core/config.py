@@ -5,6 +5,8 @@ import datetime
 from pydantic import BaseSettings, Field
 import os
 
+from core.enums import Providers
+
 
 class AuthSettings(BaseSettings):
     db_name: str = Field("auth_database", env="POSTGRES_DB")
@@ -18,6 +20,7 @@ class AuthSettings(BaseSettings):
     jwt_secret_key: str = Field("super-secret", env="JWT_SECRET_KEY")
     jaeger_host: str = Field("jaeger", env="JAEGER_HOST")
     jaeger_port: int = Field(6831, env="JAEGER_PORT")
+    tracer_enabled: bool = Field(False, env="TRACER_ENABLED")
 
 
     class Config:
@@ -52,7 +55,7 @@ ACCESS_TOKEN_EXPERATION_TIMEDELTA = datetime.timedelta(
 
 
 vk_config = {
-    "name": "vk",
+    "name": Providers.VK,
     "client_id": os.environ.get('CLIENT_ID_VK'),
     "client_secret": os.environ.get('CLIENT_SECRET_VK'),
     "access_token_url": "https://oauth.vk.com/access_token",
@@ -67,7 +70,7 @@ vk_config = {
 }
 
 yandex_config = {
-    "name": "yandex",
+    "name": Providers.YANDEX,
     "client_id": os.environ.get('CLIENT_ID_YANDEX'),
     "client_secret": os.environ.get('CLIENT_SECRET_YANDEX'),
     "access_token_url": "https://oauth.yandex.ru/token",
@@ -80,7 +83,7 @@ yandex_config = {
 
 
 mail_config = {
-    "name": "mail",
+    "name": Providers.MAIL,
     "client_id": os.environ.get('CLIENT_ID_MAIL'),
     "client_secret": os.environ.get('CLIENT_SECRET_MAIL'),
     "access_token_url": "https://oauth.mail.ru/token",
