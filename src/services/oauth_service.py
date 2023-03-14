@@ -43,7 +43,7 @@ class MailOAuthService(OAuthService):
 
 
 class VkOAuthService(OAuthService):
-    def get_user_info(self, *args, **kwargs):
+    def get_user_info(self, *args, **kwargs) -> OAuthProviderInfo:
         client = oauth_client.create_client(self.name)
         token = client.authorize_access_token()
         return get_schema_user_info(self.name)(**token)
@@ -51,7 +51,7 @@ class VkOAuthService(OAuthService):
 
 def get_provider(provider_name: str) -> OAuthService:
     """По имени провайдера получить сервси для авторизации."""
-    providers_to_service: dict = {
+    providers_to_service: dict[str, type[OAuthService]] = {
         Providers.VK.value: VkOAuthService,
         Providers.YANDEX.value: YandexOAuthService,
         Providers.MAIL.value: MailOAuthService,

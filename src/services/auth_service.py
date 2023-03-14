@@ -13,12 +13,12 @@ class BaseAuth(ABC):
     """Базовый класс для аутентефикации пользователя."""
 
     @abstractmethod
-    def signup(self, *args, **kwargs):
+    def signup(self, *args, **kwargs) -> User:
         """Метод регистрации пользователя."""
         pass
 
     @abstractmethod
-    def login(self, *args, **kwargs):
+    def login(self, *args, **kwargs) -> User:
         """Метод аутентефикации."""
         pass
 

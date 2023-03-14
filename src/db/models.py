@@ -20,7 +20,7 @@ class User(db.Model):
         unique=True,
         nullable=False,
     )
-    login = db.Column(db.String, unique=True, nullable=False)
+    login = db.Column(db.String(120), unique=True, nullable=False)
 
     # Храним хэш пароля - бинарные данные.
     password = db.Column(db.LargeBinary, nullable=False)
